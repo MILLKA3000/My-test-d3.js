@@ -1,0 +1,37 @@
+[
+{
+"date"  : "JAN 1",
+"value" : 5,
+"type"  : "INTEL"
+},
+{
+"date"  : "JAN 2",
+"value" : 200,
+"type"  : "INTEL"
+},
+{
+"date"  : "JAN 3",
+"value" : 15,
+"type"  : "INTEL"
+},
+{
+"date"  : "JAN 4",
+"value" : 50,
+"type"  : "INTEL"
+},
+{
+"date"  : "JAN 5",
+"value" : 10,
+"type"  : "INTEL"
+},
+{
+"date"  : "JAN 6",
+"value" : 12,
+"type"  : "INTEL"
+},
+{
+"date"  : "JAN 29",
+"value" : 35,
+"type"  : "INTEL"
+}
+]

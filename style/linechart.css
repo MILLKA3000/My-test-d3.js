@@ -1,0 +1,41 @@
+.ui__timeline {
+    height: 14em;
+    margin: 1em 0 0 0;
+}
+.domain {
+    display: none;
+}
+
+.tick {
+    fill: #000;
+    font-size: 0.8em;
+
+}
+
+.ui {
+    background-color: #ECECEC;
+    -webkit-filter: drop-shadow(12px 12px 7px rgba(0,0,0,0.5));
+    filter: drop-shadow(12px 12px 7px rgba(0,0,0,0.5));
+    height: 600px;
+    width: 700px;
+}
+
+/*.focus circle:hover {*/
+    /*fill: green;*/
+    /*stroke: green;*/
+    /*opacity: 8;*/
+/*}*/
+
+.overlay {
+    fill: none;
+    pointer-events: all;
+}
+
+div.tooltip {
+    visibility: hidden;
+    background: rgb(134, 209, 255);
+    border: solid gray 1px;
+    padding: 3px;
+    border-radius: 9px;
+    position: absolute;
+}

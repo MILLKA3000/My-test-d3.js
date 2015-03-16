@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<link rel="stylesheet" type="text/css" href="style/linechart.css">
+<link rel="stylesheet" type="text/css" href="style/angular.css">
+<head>
+    <script src= "http://ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js"></script>
+</head>
+<body>
+<div class="ui">
+    <h1>Test line chart</h1>
+    <div class="ui__timeline"> <!-- Graph -->
+    </div>
+</div>
+<div class="tooltip">Tipsy!</div>
+
+<div ng-app="" ng-controller="my">
+    <div class="container_days" >
+        <div class="button shadow" ng-click="toggle()">{{ button }}</div>
+        <div class="day shadow" ng-repeat="x in names" ng-hide="myVar">
+            <div class="date">
+                {{ x.date }}
+            </div>
+            <span class="post">POST COUNT</span>
+            <div class="value">
+                {{ x.value }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function my($scope,$http) {
+        $http.get('json/data.json').
+                success(function(data, status, headers, config) {
+                    $scope.names = data;
+                });
+        $scope.myVar = !$scope.myVar;
+        $scope.button = "SHOW";
+
+        $scope.toggle = function() {
+            $scope.myVar = !$scope.myVar;
+            if ($scope.button=="SHOW") {
+                $scope.button="HIDE"
+            }else{
+                $scope.button="SHOW"
+            }
+        };
+    };
+
+</script>
+
+
+<script src="js/d3.min.js"></script>
+<script src="js/linechart.js"></script>

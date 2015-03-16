@@ -1,0 +1,57 @@
+.ui{
+    float: left;
+}
+.day{
+    display: block;
+    height: 200px;
+    width: 100px;
+    float: left;
+    background-color: #CEFC60;
+    margin: 0px 2px;
+    text-align: center;
+    border-radius: 6px;
+    border: 2px #D0E29B solid;
+}
+.container_days{
+    float: left;
+    padding-top: 30px;
+    padding-left: 15px;
+    font-family: fantasy;
+}
+.container_days .date{
+    height: 25%;
+    background-color: #939D85;
+    font-size: 26pt;
+    color: white;
+    opacity: 0.6;
+    border-bottom: 1px solid #D0E29B;
+    border-radius: 4px;
+}
+.container_days .value{
+    font-size: 30pt;
+    top: 50px;
+    position: relative;
+    color: #4B6747;
+}
+.container_days .post{
+    position: relative;
+    top: 45px;
+}
+.button{
+    width: 100px;
+    height: 25px;
+    background-color: #D0F28B;
+    text-align: center;
+    border-radius: 6px;
+    border: 2px #D0E29B solid;
+    margin-bottom: 10px;
+}
+
+.button:hover{
+    background-color: #D0E29B;
+    cursor: pointer;
+}
+.shadow{
+    -webkit-filter: drop-shadow(12px 12px 7px rgba(0,0,0,0.5));
+    filter: drop-shadow(12px 12px 7px rgba(0,0,0,0.5));
+}

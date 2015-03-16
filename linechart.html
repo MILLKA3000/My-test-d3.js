@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+    .ui__timeline {
+        height: 14em;
+        margin: 1em 0 0 0;
+    }
+    .domain {
+        display: none;
+    }
+
+    .tick {
+        fill: #000;
+        font-size: 0.8em;
+
+    }
+
+    .ui {
+        background-color: #ECECEC;
+        -webkit-filter: drop-shadow(12px 12px 7px rgba(0,0,0,0.5));
+                filter: drop-shadow(12px 12px 7px rgba(0,0,0,0.5));
+        position: absolute;
+
+        width: 960px;
+        height: 600px;
+
+        top: 50%;
+        left: 50%;
+
+        /*overflow: hidden;*/
+
+        margin: -300px 0 0 -480px;
+    }
+
+</style>
+<body>
+<div class="ui">
+    <h1 class="ui__main__headline">Test line chart</h1>
+    <div class="ui__timeline" width=900 height=470>
+
+    </div>
+</div>
+
+<script src="js/d3.min.js"></script>
+<script>
+
+    function visualizeDownloadTimeline( selector, data ) {
+        var d3container = d3.select( selector ),
+                width       = d3container.attr( 'width' ),
+                height      = d3container.attr( 'height' ),
+                margin      = { top : 50, right : 0, bottom : 30, left : 0 },
+                padding     = { top : 0, right : -50, bottom : 0, left : 0 },
+                svg         = d3container.append( 'svg' )
+                        .attr( 'height', height )
+                        .attr( 'width', width ),
+
+                x     = d3.scale.ordinal()
+                        .rangeRoundBands( [ 0, width ] )
+                        .domain(
+                                data.map( function( d ) { return d.date; } )
+                        ),
+                xAxis = d3.svg.axis().scale( x ).orient( 'bottom' ),
+
+                y     = d3.scale.linear()
+                        .range( [ height - margin.bottom * 1.5, margin.top ] )
+                        .domain(
+                                [ 0, d3.max( data, function( d ) { return d.value; } ) ]
+                        ),
+                yAxis = d3.svg.axis().scale( y ).orient( 'left' ).ticks(10),
+
+                xAxisGroup,
+                yAxisGroup,
+
+                duration = 3000;
+
+        xAxisGroup = svg.append( 'g' )
+                .attr( 'class', 'x axis' )
+                .attr( 'transform', 'translate( 0,' + ( height - margin.bottom ) + ')' )
+                .transition()
+                .call( xAxis );
+
+        yAxisGroup = svg.append( 'g' )
+                .attr( 'class', 'y axis' )
+                .attr( 'transform', 'translate(' + ( 50 ) + ')', 0 );
+
+
+        //------------------------------------------------------------begin filters
+        var defs = svg.append( 'defs' );
+
+        var filter = defs.append( 'filter' )
+                .attr( 'id', 'dropshadowArea' )
+
+        filter.append( 'feGaussianBlur' )
+                .attr( 'in', 'SourceAlpha' )
+                .attr( 'stdDeviation', 3 )
+                .attr( 'result', 'blur' );
+        filter.append( 'feOffset' )
+                .attr( 'in', 'blur' )
+                .attr( 'dx', 2 )
+                .attr( 'dy', 2 )
+                .attr( 'result', 'offsetBlur' );
+
+        var gradient = defs.append( 'linearGradient' )
+                .attr( 'id', 'grad1' )
+                .attr('x1','0%')
+                .attr('y1','0%')
+                .attr('x2','0%')
+                .attr('y2','100%')
+
+        gradient.append( 'stop' )
+                .attr( 'offset', '0%' )
+                .attr( 'style', 'stop-color:rgb(105, 159, 240);stop-opacity:1' );
+        gradient.append( 'stop' )
+                .attr( 'offset', '100%' )
+                .attr( 'style', 'stop-color: rgb(156, 189, 240);stop-opacity:.5' );
+
+
+        var feMerge = filter.append( 'feMerge' );
+
+//        feMerge.append( 'feMergeNode' )
+//                .attr( 'in", "offsetBlur' )
+        feMerge.append( 'feMergeNode' )
+                .attr( 'in', 'SourceGraphic' );
+        //------------------------------------------------------------end filters
+
+        drawArea(svg,data.filter(function( datum ) { return datum.type === 'INTEL'; }),1);
+        drawYaxes(svg);
+
+        function drawYaxes(svg){
+            svg.select(".y.axis")
+                    .transition()
+                    .call(yAxis)
+                    .selectAll("text")
+                    .style("text-anchor", "middle");
+            svg.select(".y.axis")
+                    .append("text")
+                    .attr("text-anchor", "middle")
+                    .attr("y", 20)
+                    .attr("dx", ".2em")
+                    .text("POST COUNT");
+            var circle = svg.select(".y.axis").selectAll('.tick')
+                    .append("circle")
+                    .attr("r",10)
+                    .attr("fill",'grey')
+                    .attr("opacity",.2);
+
+                circle.transition()
+                    .attr("transform", function(d) {
+                        return "translate("+(-8)+",0)";
+                    });
+        }
+
+
+        function drawArea( svg, data, index ) {
+            var area = d3.svg.area()
+                            .x( function( d ) { return x( d.date ) + x.rangeBand() / 2 ; } )
+                            .y0( height - margin.bottom * 1.5 )
+                            .y1( function( d ) { return y( d.value ); } )
+                            .interpolate( 'cardinal' ),
+                    startData = [];
+
+            data.forEach( function( datum ) {
+                startData.push( { date : datum.date, value : datum.value } );
+            } );
+
+            svg.append( 'path' )
+                    .datum( startData )
+                    .attr( 'stroke' ,'#a8aff1')
+                    .attr( 'stroke-width' ,'3')
+                    .attr( 'd', area )
+                    .attr( 'filter', 'url(#dropshadowArea)' )
+                    .attr( 'fill' ,'url(#grad1)')
+                    .transition()
+                    .delay( 1000 * index )
+                    .duration( duration )
+                    .attrTween( 'd', data);
+
+        }
+    }
+    function init() {
+        d3.json("json/data.json",function(data){
+            visualizeDownloadTimeline('.ui__timeline',data);
+        });
+    }
+
+    init();
+
+</script>
