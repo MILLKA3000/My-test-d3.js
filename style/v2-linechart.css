@@ -1,0 +1,23 @@
+.overlay {
+    fill: none;
+    pointer-events: all;
+}
+
+.domain {
+    display: none;
+}
+.tick{
+
+font-size:  18px;
+    fill:#000;
+}
+.line {
+    stroke-width: 2;
+    fill: none;
+}
+
+rect.pane {
+    cursor: move;
+    fill: none;
+    pointer-events: all;
+}

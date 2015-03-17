@@ -1,0 +1,141 @@
+[
+    {
+        "date"  : "2015-01-15",
+        "value" : 515,
+        "type"  : "INTEL"
+    },
+    {
+        "date"  : "2015-01-16",
+        "value" : 618,
+        "type"  : "INTEL"
+    },
+    {
+        "date"  : "2015-01-17",
+        "value" : 498,
+        "type"  : "INTEL"
+    },
+    {
+        "date"  : "2015-01-18",
+        "value" : 1243,
+        "type"  : "INTEL"
+    },
+    {
+        "date"  : "2015-01-19",
+        "value" : 800,
+        "type"  : "INTEL"
+    },
+    {
+        "date"  : "2015-01-20",
+        "value" : 105,
+        "type"  : "INTEL"
+    },
+    {
+        "date"  : "2015-01-21",
+        "value" : 1033,
+        "type"  : "INTEL"
+    },
+    {
+        "date"  : "2015-01-22",
+        "value" : 400,
+        "type"  : "INTEL"
+    },
+    {
+        "date"  : "2015-01-23",
+        "value" : 123,
+        "type"  : "INTEL"
+    },
+    {
+        "date"  : "2015-01-15",
+        "value" : 135,
+        "type"  : "ASUS"
+    },
+    {
+        "date"  : "2015-01-16",
+        "value" : 218,
+        "type"  : "ASUS"
+    },
+    {
+        "date"  : "2015-01-17",
+        "value" : 798,
+        "type"  : "ASUS"
+    },
+    {
+        "date"  : "2015-01-18",
+        "value" : 643,
+        "type"  : "ASUS"
+    },
+    {
+        "date"  : "2015-01-19",
+        "value" : 533,
+        "type"  : "ASUS"
+    },
+    {
+        "date"  : "2015-01-20",
+        "value" : 556,
+        "type"  : "ASUS"
+    },
+    {
+        "date"  : "2015-01-21",
+        "value" : 200,
+        "type"  : "ASUS"
+    },
+    {
+        "date"  : "2015-01-22",
+        "value" : 52,
+        "type"  : "ASUS"
+    },
+    {
+        "date"  : "2015-01-23",
+        "value" : 533,
+        "type"  : "ASUS"
+    },
+
+    {
+        "date"  : "2015-01-15",
+        "value" : 846,
+        "type"  : "DELL"
+    },
+    {
+        "date"  : "2015-01-16",
+        "value" : 218,
+        "type"  : "DELL"
+    },
+    {
+        "date"  : "2015-01-17",
+        "value" : 428,
+        "type"  : "DELL"
+    },
+    {
+        "date"  : "2015-01-18",
+        "value" : 843,
+        "type"  : "DELL"
+    },
+    {
+        "date"  : "2015-01-19",
+        "value" : 333,
+        "type"  : "DELL"
+    },
+    {
+        "date"  : "2015-01-20",
+        "value" : 38,
+        "type"  : "DELL"
+    }
+    ,
+    {
+        "date"  : "2015-01-21",
+        "value" : 900,
+        "type"  : "DELL"
+    }
+    ,
+    {
+        "date"  : "2015-01-22",
+        "value" : 450,
+        "type"  : "DELL"
+    }
+    ,
+    {
+        "date"  : "2015-01-23",
+        "value" : 33,
+        "type"  : "DELL"
+    }
+ ]
