@@ -45,6 +45,11 @@
         "type"  : "INTEL"
     },
     {
+        "date"  : "2015-01-24",
+        "value" : 500,
+        "type"  : "INTEL"
+    },
+    {
         "date"  : "2015-01-15",
         "value" : 135,
         "type"  : "ASUS"
@@ -87,6 +92,11 @@
     {
         "date"  : "2015-01-23",
         "value" : 533,
+        "type"  : "ASUS"
+    },
+    {
+        "date"  : "2015-01-24",
+        "value" : 2,
         "type"  : "ASUS"
     },
 
