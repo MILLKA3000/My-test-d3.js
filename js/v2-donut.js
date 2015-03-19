@@ -20,6 +20,10 @@ function initData(selector,dataset){
         .attr('width', width)
         .attr('height', height);
 
+    var pie = d3.layout.pie()
+        .value(function(d) { return d.value; })
+        .sort(null);
+
     initShadow();
     drawDonut(dataset,svg);
 
@@ -41,35 +45,12 @@ function initData(selector,dataset){
             .append( 'feMergeNode' )
             .attr( 'in", "offsetBlur' );
 
-//        var inCircleShadow = defs.append( 'filter' )
-//            .attr( 'id', 'inCircleShadow' );
-//
-//        inCircleShadow.append( 'feGaussianBlur' )
-//            .attr( 'stdDeviation', 4 )
-//            .attr('result','blur1')
-//        inCircleShadow.append( 'feSpecularLighting' )
-//                .attr( 'in', 'blur1' )
-//                .attr('result','specOut')
-//                .attr('specularExponent',50)
-//                .attr('lighting-color','red')
-//                    .append('fePointLight')
-//                        .attr( 'x', width / 2 )
-//                        .attr( 'y', height / 2 )
-//                        .attr( 'z', 200 )
-//        inCircleShadow.append( 'feComposite' )
-//            .attr( 'in', 'SourceGraphic' )
-//            .attr( 'in2', 'blur' )
-//            .attr('operator','arithmetic')
-//            .attr('k1',0)
-//            .attr('k2',1)
-//            .attr('k3',1)
-//            .attr('k4',0)
-//               ;
-//
-//        var feMerge = inCircleShadow.append( 'feMerge' )
-//            .append( 'feMergeNode' )
-//            .attr( 'in", "offsetBlur' );
+        var grads = defs.append("radialGradient")
+            .attr("id", "circle_center")
 
+            .attr("r", "100%");
+        grads.append("stop").attr("offset", "48%").style("stop-color", "white");
+        grads.append("stop").attr("offset", "100%").style("stop-color", "black");
     }
 
 
@@ -81,13 +62,8 @@ function initData(selector,dataset){
                 return innerRadius + d.data.size;
             });
 
-        var pie = d3.layout.pie()
-            .value(function(d) { return d.value; })
-            .sort(null);
-
         var ellipse = svg.append('g')
             .attr('class','bottom_shadow');
-
 
 
         ellipse.append('ellipse')
@@ -101,17 +77,21 @@ function initData(selector,dataset){
         var path = svg.append('g')
             .attr('class','donut');
 
-        path.selectAll('path').data(pie(dataset))
 
+
+        path.selectAll('path').data(pie(dataset))
             .enter()
                 .append('path')
                 .attr('d', arc)
                 .attr('transform', 'translate(' + (width / 2) +
                     ',' + (height / 2) + '),rotate(-10)')
                 .attr("fill","#fff")
+                .attr("opacity",.0)
             .transition()
-                .attr("fill", function(d,i) { return color[i]; })
-                .delay(function(d, i) { return i * 175; }).duration(400)
+                .attr("opacity",1)
+                .attr("fill", function(d, i) { return color[i]; })
+                .delay(function(d, i) { return i * 100; })
+                    .duration(400)
                     .attrTween('d', function(d) {
                      var i = d3.interpolate(d.startAngle+0.1, d.endAngle);
                         return function(t) {
@@ -119,9 +99,20 @@ function initData(selector,dataset){
                           return arc(d);
                     }
                     });
+        setTimeout(function(){
+            path.append('circle')
+                .attr('cx',width/2)
+                .attr('cy',height/2)
+                .attr('r',innerRadius)
+                .attr("opacity",.0)
+                .transition().duration(1000)
+                .attr("opacity",1)
+                .attr('fill','url(#circle_center)');
+        },200)
 
-        svg.select('.donut')
-            .transition();
+
+
+
 
 
 
