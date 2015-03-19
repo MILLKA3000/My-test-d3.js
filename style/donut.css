@@ -11,3 +11,14 @@ polyline{
     stroke-opacity:.5;
 
 }
+.text_value{
+    font-size: 40pt;
+}
+
+.text_name{
+    fill:grey;
+    font-weight:bold;
+}
+.percent{
+    font-size: 20pt;
+}

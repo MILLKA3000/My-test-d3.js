@@ -1,14 +1,15 @@
 var dataset = [
-    { value: 20, size: 100,name: "ASUS" },
-    { value: 10, size: 100,name: "ACER" },
-    { value: 5, size: 100,name: "OTHER" },
+    { value: 3, size: 100,name: "ASUS" },
+    { value: 3, size: 100,name: "ACER" },
+    { value: 30, size: 100,name: "OTHER" },
     { value: 25, size: 100,name: "DELL" },
-    { value: 30, size: 120,name: "INTEL" }
+    { value: 3, size: 120,name: "INTEL" }
 ];
 
 function initData(selector,dataset){
     var width = 800;
     var height = 600;
+    var radius = Math.min(width, height) / 2;
     var rotate = 10;
 
     var donutWidth = 175;
@@ -36,7 +37,6 @@ function initData(selector,dataset){
 
         var ellipseShadow = defs.append( 'filter' )
             .attr( 'id', 'shadowDonut' );
-
         ellipseShadow.append( 'feGaussianBlur' )
             .attr( 'stdDeviation', 11 )
                 .append( 'feOffset' )
@@ -103,15 +103,15 @@ function initData(selector,dataset){
 
         setTimeout(function(){
             path.append('circle')
-                .attr('cx',width/2)
-                .attr('cy',height/2)
-                .attr('r',innerRadius)
-                .attr("opacity",.0)
-                .transition().duration(1000)
-                .attr("opacity",1)
-                .attr('fill','url(#circle_center)');
-
-        },200)
+                .attr({
+                    cx: width/2,
+                    cy: height/2,
+                    r: innerRadius,
+                    opacity: 0})
+                        .transition().duration(1000)
+                        .attr("opacity",1)
+                        .attr('fill','url(#circle_center)');
+        },200);
 
         setTimeout(function(){
 
@@ -122,20 +122,20 @@ function initData(selector,dataset){
 
             circles.enter()
                 .append("circle")
-                .attr('transform', 'translate(' + (width / 2) +
-                    ',' + (height / 2) + ')')
-                .attr('r',function(){return radiusPointSmallCircle[0]; })
-                .attr('fill', function(){return colorPointSmallCircle[0]; })
+                .attr({
+                    transform: 'translate(' + (width / 2) + ',' + (height / 2) + ')',
+                    r: function(){return radiusPointSmallCircle[0]; },
+                    fill: function(){return colorPointSmallCircle[0]; }})
                 .transition().duration(1000)
                 .attrTween("cx", function(d){ return findCenterForCircles(d,0);})
                 .attrTween("cy", function(d){ return findCenterForCircles(d,1);});
 
             circles.enter()
                 .append("circle")
-                .attr('transform', 'translate(' + (width / 2) +
-                    ',' + (height / 2) + ')')
-                .attr('r',function(){return radiusPointSmallCircle[1]; })
-                .attr('fill', function(){return colorPointSmallCircle[1]; })
+                .attr({
+                    transform: 'translate(' + (width / 2) + ',' + (height / 2) + ')',
+                    r: function(){return radiusPointSmallCircle[1]; },
+                    fill: function(){return colorPointSmallCircle[1]; }})
                 .transition().duration(1000)
                 .attrTween("cx", function(d){ return findCenterForCircles(d,0);})
                 .attrTween("cy", function(d){ return findCenterForCircles(d,1);});
@@ -154,44 +154,53 @@ function initData(selector,dataset){
                         var interpolate = d3.interpolate(d, d);
                         return function(t) {
                             var d2 = interpolate(t);
+                            var start = arc.centroid(d2);
                             var pos = arc.centroid(d2);
-                            pos[0] = innerRadius * 2.5 * (midAngle(d2) < Math.PI ? 1 : -1);
+                            pos[0] = start[0]+donutWidth * 1.1 * (midAngle(d2) < Math.PI ? 1 : -1);
                             return [arc.centroid(d2), pos];
                         };
                 });
 
             var text =  svg.append("g")
-                .attr("class", "text")
                 .selectAll("text")
-                .data(pie(dataset))
-                .enter()
+                .data(pie(dataset));
+
+            var text_name = text.enter()
                     .append("text")
-                    .attr("dy", ".35em")
-                    .text(function(d) {
-                        return d.data.name;
-                    })
+                    .attr("class", "text_name")
+                    .text(function(d) { return d.data.name;})
                 .transition().duration(1000)
-                .attrTween("transform", function(d) {
-                    var interpolate = d3.interpolate(d, d);
-                    return function(t) {
-                        var d2 = interpolate(t);
-                        var pos = arc.centroid(interpolate(t));
-                        pos[0] = innerRadius * 2.5 * (midAngle(d2) < Math.PI ? 1 : -1)+(width / 2);
-                        pos[1] += height / 2;
-                        midAngle(d2) > (90 * Math.PI/180) ? pos[1] +=50 : pos[1] -=50;
+                    .attrTween("transform", function(d){ return transformText(d)})
+                    .styleTween("text-anchor", function(d){ return textAnchor(d); });
 
-                        return "translate("+ pos +")";
-                    };
-                })
+            var text_val = text.enter()
+                    .append("text")
+                    .attr("fill", function(d, i) {
+                        return color[i]=="#ffffff" ? "grey" : color[i]; })
+                    .attr("class", "text_value")
+                .text(function(d) { return d.data.value;})
+                    .transition().duration(1000)
+                    .attrTween("transform", function(d){ return transformValue(d)})
+                    .styleTween("text-anchor", function(d){ return textAnchor(d); });
 
 
-                .styleTween("text-anchor", function(d){
-                    var interpolate = d3.interpolate(d, d);
-                    return function(t) {
-                        var d2 = interpolate(t);
-                        return midAngle(d2) < Math.PI ? "end":"start";
-                    };
-                });
+
+            var percent = text.enter()
+                    .append("text")
+                    .attr("fill", function(d, i) {
+                        return color[i]=="#ffffff" ? "grey" : color[i]; })
+                    .attr("class", "percent")
+                    .text("%")
+                .transition().duration(1000)
+                    .attrTween("transform", function(d,i){
+                        return transformPercent(d)})
+                    .styleTween("text-anchor", function(d){ return textAnchor(d); });
+
+            text_name_box = text_name.node().getBBox();
+            percent_box = percent.node().getBBox();
+            text_val_box = text_val.get;
+            console.log(text_val_box);
+
 
             function findCenterForCircles(d,n){
                 var interpolate = d3.interpolate(d, d);
@@ -200,6 +209,65 @@ function initData(selector,dataset){
                     var d2 = interpolate(t);
                     var start = arc.centroid(d2);
                     return start[n];
+                };
+            }
+
+            function textAnchor(d){
+                var interpolate = d3.interpolate(d, d);
+                return function(t) {
+                    var d2 = interpolate(t);
+                    return midAngle(d2) < Math.PI ? "end":"start";
+                };
+            }
+
+            function transformPercent(d){
+                var interpolate = d3.interpolate(d, d);
+                return function(t) {
+                    var d2 = interpolate(t);
+                    var start = arc.centroid(d2);
+                    var pos = arc.centroid(interpolate(t));
+                    if (midAngle(d2) < Math.PI){
+                        pos[0] = start[0]+donutWidth * 1.1 + (width / 2);
+                    }else{
+                        pos[0] = start[0]+donutWidth * 1.1 * -1 + (width / 2)+text_val_box.width ;
+                    }
+                    pos[1] += height / 2;
+                    midAngle(d2) > (Math.PI/2) && midAngle(d2) < (3 * Math.PI/2) ? pos[1] +=22 : pos[1] -=25;
+                    return "translate("+ pos +")";
+                };
+            }
+
+            function transformValue(d){
+                var interpolate = d3.interpolate(d, d);
+                return function(t) {
+                    var d2 = interpolate(t);
+                    var start = arc.centroid(d2);
+                    var pos = arc.centroid(interpolate(t));
+                    if (midAngle(d2) < Math.PI){
+                        pos[0] = start[0]+donutWidth * 1.1 + (width / 2)-percent_box.width;
+                    }else{
+                        pos[0] = start[0]+donutWidth * 1.1 * -1 + (width / 2) ;
+                    }
+                    pos[1] += height / 2;
+                    midAngle(d2) > (Math.PI/2) && midAngle(d2) < (3 * Math.PI/2) ? pos[1] +=40 : pos[1] -=8;
+                    return "translate("+ pos +")";
+                };
+            }
+
+            function transformText(d){
+                var interpolate = d3.interpolate(d, d);
+                return function(t) {
+                    var d2 = interpolate(t);
+                    var start = arc.centroid(d2);
+                    var pos = arc.centroid(interpolate(t));
+                    if (midAngle(d2) < Math.PI){
+                        pos[0] = start[0]+donutWidth * 1.1 + (width / 2)-((percent_box.width)-text_name_box.width);
+                    }else{
+                        pos[0] = start[0]+donutWidth * 1.1 * -1 + (width / 2) ;
+                    }
+                    pos[1] += height / 2;
+                    midAngle(d2) > (Math.PI/2) && midAngle(d2) < (3 * Math.PI/2) ? pos[1] +=55 : pos[1] -=50;
+                    return "translate("+ pos +")";
                 };
             }
 
