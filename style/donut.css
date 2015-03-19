@@ -5,3 +5,9 @@ path {
 body{
     background-color: #F5F6F5 ;
 }
+polyline{
+    stroke: grey;
+    stroke-width: 2;
+    stroke-opacity:.5;
+
+}
