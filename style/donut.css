@@ -7,18 +7,22 @@ body{
 }
 polyline{
     stroke: grey;
-    stroke-width: 2;
-    stroke-opacity:.5;
+    stroke-width: 1;
+    stroke-opacity:.9;
 
 }
 .text_value{
-    font-size: 40pt;
+    font-family: abelregular;
+    font-size: 60px;
 }
 
 .text_name{
+    font-family: open_sanssemibold;
     fill:grey;
+    font-size: 15px;
     font-weight:bold;
 }
 .percent{
-    font-size: 20pt;
+    font-family: abelregular;
+    font-size: 25px;
 }

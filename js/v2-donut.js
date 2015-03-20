@@ -1,23 +1,26 @@
 var dataset = [
     { value: 3, size: 100,name: "ASUS" },
-    { value: 3, size: 100,name: "ACER" },
-    { value: 30, size: 100,name: "OTHER" },
-    { value: 25, size: 100,name: "DELL" },
-    { value: 3, size: 120,name: "INTEL" }
+    { value: 28, size: 100,name: "ACER" },
+    { value: 25, size: 100,name: "OTHER" },
+    { value: 5, size: 100,name: "DELL" },
+    { value: 30, size: 120,name: "INTEL" }
 ];
+
+
+
 
 function initData(selector,dataset){
     var width = 800;
     var height = 600;
     var radius = Math.min(width, height) / 2;
     var rotate = 10;
-
     var donutWidth = 175;
     var innerRadius = (Math.min(width, height) / 2) - donutWidth;
 
     var color = ['#f2c426','#c366ea','#07a2f2','#ffffff','#0071c5'];
     var colorPointSmallCircle = ["white", "grey"];
     var radiusPointSmallCircle = [5, 2];
+    var paddingCenterCircleForInfoData = 1.15;
 
     var svg = d3.select('#'+selector)
         .append('svg')
@@ -84,8 +87,7 @@ function initData(selector,dataset){
             .enter()
                 .append('path')
                 .attr('d', arc)
-                .attr('transform', 'translate(' + (width / 2) +
-                    ',' + (height / 2) + ')')
+                .attr('transform', 'translate(' + (width / 2) + ',' + (height / 2) + ')')
                 .attr("fill","#fff")
                 .attr("opacity",.0)
             .transition()
@@ -114,7 +116,6 @@ function initData(selector,dataset){
         },200);
 
         setTimeout(function(){
-
             var circles = svg.append("g")
                 .attr("class", "lines")
                 .selectAll("circle")
@@ -156,7 +157,7 @@ function initData(selector,dataset){
                             var d2 = interpolate(t);
                             var start = arc.centroid(d2);
                             var pos = arc.centroid(d2);
-                            pos[0] = start[0]+donutWidth * 1.1 * (midAngle(d2) < Math.PI ? 1 : -1);
+                            pos[0] = start[0]+donutWidth * paddingCenterCircleForInfoData * (midAngle(d2) < Math.PI ? 1 : -1);
                             return [arc.centroid(d2), pos];
                         };
                 });
@@ -165,15 +166,18 @@ function initData(selector,dataset){
                 .selectAll("text")
                 .data(pie(dataset));
 
-            var text_name = text.enter()
+            text.enter()
                     .append("text")
                     .attr("class", "text_name")
                     .text(function(d) { return d.data.name;})
                 .transition().duration(1000)
-                    .attrTween("transform", function(d){ return transformText(d)})
-                    .styleTween("text-anchor", function(d){ return textAnchor(d); });
+                    .attrTween("transform", function(d){ return transformName(d)})
+                    .styleTween("text-anchor", function(d){ return textAnchor(d)})
+                .each(function(d) {
+                    d.text_name_box = (this.getBBox());
+                });
 
-            var text_val = text.enter()
+            text.enter()
                     .append("text")
                     .attr("fill", function(d, i) {
                         return color[i]=="#ffffff" ? "grey" : color[i]; })
@@ -181,25 +185,26 @@ function initData(selector,dataset){
                 .text(function(d) { return d.data.value;})
                     .transition().duration(1000)
                     .attrTween("transform", function(d){ return transformValue(d)})
-                    .styleTween("text-anchor", function(d){ return textAnchor(d); });
+                    .styleTween("text-anchor", function(d){ return textAnchor(d)})
+                .each(function(d) {
+                    d.text_val_box = (this.getBBox());
+                });
 
 
 
-            var percent = text.enter()
+            text.enter()
                     .append("text")
                     .attr("fill", function(d, i) {
                         return color[i]=="#ffffff" ? "grey" : color[i]; })
                     .attr("class", "percent")
                     .text("%")
                 .transition().duration(1000)
-                    .attrTween("transform", function(d,i){
-                        return transformPercent(d)})
-                    .styleTween("text-anchor", function(d){ return textAnchor(d); });
+                    .attrTween("transform", function(d){return transformPercent(d)})
+                    .styleTween("text-anchor", function(d){ return textAnchor(d)})
+                .each(function(d) {
+                    d.percent_box = (this.getBBox());
+                });
 
-            text_name_box = text_name.node().getBBox();
-            percent_box = percent.node().getBBox();
-            text_val_box = text_val.get;
-            console.log(text_val_box);
 
 
             function findCenterForCircles(d,n){
@@ -227,12 +232,12 @@ function initData(selector,dataset){
                     var start = arc.centroid(d2);
                     var pos = arc.centroid(interpolate(t));
                     if (midAngle(d2) < Math.PI){
-                        pos[0] = start[0]+donutWidth * 1.1 + (width / 2);
+                        pos[0] = start[0]+donutWidth * paddingCenterCircleForInfoData + (width / 2);
                     }else{
-                        pos[0] = start[0]+donutWidth * 1.1 * -1 + (width / 2)+text_val_box.width ;
+                        pos[0] = start[0]+donutWidth * paddingCenterCircleForInfoData * -1 + (width / 2)+ d.text_val_box.width-8;
                     }
                     pos[1] += height / 2;
-                    midAngle(d2) > (Math.PI/2) && midAngle(d2) < (3 * Math.PI/2) ? pos[1] +=22 : pos[1] -=25;
+                    midAngle(d2) > (Math.PI/2) && midAngle(d2) < (3 * Math.PI/2) ? pos[1] +=d.text_val_box.height/2 + d.text_name_box.height : pos[1] -=d.text_val_box.height/2;
                     return "translate("+ pos +")";
                 };
             }
@@ -244,29 +249,29 @@ function initData(selector,dataset){
                     var start = arc.centroid(d2);
                     var pos = arc.centroid(interpolate(t));
                     if (midAngle(d2) < Math.PI){
-                        pos[0] = start[0]+donutWidth * 1.1 + (width / 2)-percent_box.width;
+                        pos[0] = start[0]+donutWidth * paddingCenterCircleForInfoData + (width / 2)- d.percent_box.width;
                     }else{
-                        pos[0] = start[0]+donutWidth * 1.1 * -1 + (width / 2) ;
+                        pos[0] = start[0]+donutWidth * paddingCenterCircleForInfoData * -1 + (width / 2) ;
                     }
                     pos[1] += height / 2;
-                    midAngle(d2) > (Math.PI/2) && midAngle(d2) < (3 * Math.PI/2) ? pos[1] +=40 : pos[1] -=8;
+                    midAngle(d2) > (Math.PI/2) && midAngle(d2) < (3 * Math.PI/2) ? pos[1] +=d.text_val_box.height+8 : pos[1] -=10;
                     return "translate("+ pos +")";
                 };
             }
 
-            function transformText(d){
+            function transformName(d){
                 var interpolate = d3.interpolate(d, d);
                 return function(t) {
                     var d2 = interpolate(t);
                     var start = arc.centroid(d2);
                     var pos = arc.centroid(interpolate(t));
                     if (midAngle(d2) < Math.PI){
-                        pos[0] = start[0]+donutWidth * 1.1 + (width / 2)-((percent_box.width)-text_name_box.width);
+                        pos[0] = start[0]+donutWidth * paddingCenterCircleForInfoData + (width / 2) - d.text_val_box.width + d.text_name_box.width-8;
                     }else{
-                        pos[0] = start[0]+donutWidth * 1.1 * -1 + (width / 2) ;
+                        pos[0] = start[0]+donutWidth * paddingCenterCircleForInfoData * -1 + (width / 2) ;
                     }
                     pos[1] += height / 2;
-                    midAngle(d2) > (Math.PI/2) && midAngle(d2) < (3 * Math.PI/2) ? pos[1] +=55 : pos[1] -=50;
+                    midAngle(d2) > (Math.PI/2) && midAngle(d2) < (3 * Math.PI/2) ? pos[1] +=20 : pos[1] -= d.text_val_box.height-5;
                     return "translate("+ pos +")";
                 };
             }
@@ -274,13 +279,7 @@ function initData(selector,dataset){
             function midAngle(d){
                 return d.startAngle + (d.endAngle - d.startAngle)/2;
             }
-
-
-
-
         },1000);
-
-
 
     }
 }
