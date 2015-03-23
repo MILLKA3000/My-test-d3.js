@@ -11,7 +11,7 @@ function initchart(selector,data){
 
     var x = d3.time.scale()
         .range([0, width])
-        .domain([new Date(data[0].date), d3.time.day.offset(new Date(data[data.length - 5].date), 1)]);
+        .domain([new Date(data[0].date), d3.time.day.offset(new Date(data[data.length - 27].date), 1)]);
 
     var y = d3.scale.linear()
         .range([height, margin.top])
@@ -57,9 +57,10 @@ function initchart(selector,data){
         redraw();
     });
 
-    drawchart(svg,data.filter(function( datum ) { return datum.type === 'INTEL'; }),'#F3D364','#F2C52C');
-    drawchart(svg,data.filter(function( datum ) { return datum.type === 'DELL'; }),'#4DBBF3','#0CA4EF');
-    drawchart(svg,data.filter(function( datum ) { return datum.type === 'ASUS'; }),'#A17CE1','#C063ED');
+    drawchart(svg,data,'#F3D364','#F2C52C');
+//    drawchart(svg,data.filter(function( datum ) { return datum.type === 'INTEL'; }),'#F3D364','#F2C52C');
+//    drawchart(svg,data.filter(function( datum ) { return datum.type === 'DELL'; }),'#4DBBF3','#0CA4EF');
+//    drawchart(svg,data.filter(function( datum ) { return datum.type === 'ASUS'; }),'#A17CE1','#C063ED');
     drawXaxes(svg);
     drawYaxes(svg);
 
@@ -147,8 +148,20 @@ function initchart(selector,data){
     }
 }
 //------------------------------ Ініціалізація і підготовка даних -------------------------- ------------------------------------------
+//function init() {
+//    d3.json("json/v2-data.json",function(data){
+//        parseDate = d3.time.format("%Y-%m-%e").parse;
+//        data.forEach(function(d) {
+//            d.date = parseDate(d.date);
+//            d.value = +d.value;
+//        });
+//        initchart('#chart',data);
+//    });
+//}
+
 function init() {
-    d3.json("json/v2-data.json",function(data){
+    d3.json("json/data_for_line_chart.json",function(data){
+        data = data.data[0].data;
         parseDate = d3.time.format("%Y-%m-%e").parse;
         data.forEach(function(d) {
             d.date = parseDate(d.date);
@@ -157,5 +170,6 @@ function init() {
         initchart('#chart',data);
     });
 }
+
 
 init();
