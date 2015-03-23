@@ -12,17 +12,23 @@ polyline{
 
 }
 .text_value{
-    font-family: abelregular;
+    /*font-family: open_sansregular;*/
+    font-family: Arial, Helvetica, Sans-Serif;
     font-size: 60px;
+    line-height: normal;
 }
 
 .text_name{
-    font-family: open_sanssemibold;
+    /*font-family: open_sansextrabold;*/
+    font-family: Arial, Helvetica, Sans-Serif;
     fill:grey;
     font-size: 15px;
-    font-weight:bold;
+    line-height: normal;
 }
 .percent{
-    font-family: abelregular;
-    font-size: 25px;
+    /*font-family: open_sansregular;*/
+    font-family: Arial, Helvetica, Sans-Serif;
+    font-size: 30px;
+    line-height: normal;
+
 }

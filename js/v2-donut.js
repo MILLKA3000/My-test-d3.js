@@ -1,3 +1,23 @@
+//webkit(safari, chrome) and FF fix bug
+// :((
+// Running getBBox() on paths with cubic bezier curves results in a box that is too big. It appears the curve's control points are included, which is of course incorrect. Non-Webkit browsers get this right.
+
+if (navigator.userAgent.indexOf('AppleWebKit')>0){
+//    add_fix_width_for_name_text=13;
+//    add_fix_width_for_percent=10;
+//    add_fix_margin_block=5;
+    add_fix_width_for_name_text=0;
+    add_fix_width_for_percent=0;
+    add_fix_margin_block=0;
+
+}else{
+    add_fix_width_for_name_text=0;
+    add_fix_width_for_percent=0;
+    add_fix_margin_block=0;
+}
+
+//end fix
+
 var dataset = [
     { value: 3, size: 100,name: "ASUS" },
     { value: 28, size: 100,name: "ACER" },
@@ -174,7 +194,7 @@ function initData(selector,dataset){
                     .attrTween("transform", function(d){ return transformName(d)})
                     .styleTween("text-anchor", function(d){ return textAnchor(d)})
                 .each(function(d) {
-                    d.text_name_box = (this.getBBox());
+                    d.text_name_box = this.getBBox();
                 });
 
             text.enter()
@@ -187,7 +207,7 @@ function initData(selector,dataset){
                     .attrTween("transform", function(d){ return transformValue(d)})
                     .styleTween("text-anchor", function(d){ return textAnchor(d)})
                 .each(function(d) {
-                    d.text_val_box = (this.getBBox());
+                    d.text_val_box = this.getBBox();
                 });
 
 
@@ -202,7 +222,7 @@ function initData(selector,dataset){
                     .attrTween("transform", function(d){return transformPercent(d)})
                     .styleTween("text-anchor", function(d){ return textAnchor(d)})
                 .each(function(d) {
-                    d.percent_box = (this.getBBox());
+                    d.percent_box = this.getBBox();
                 });
 
 
@@ -226,6 +246,7 @@ function initData(selector,dataset){
             }
 
             function transformPercent(d){
+//                console.log(d.text_val_box);
                 var interpolate = d3.interpolate(d, d);
                 return function(t) {
                     var d2 = interpolate(t);
@@ -234,10 +255,10 @@ function initData(selector,dataset){
                     if (midAngle(d2) < Math.PI){
                         pos[0] = start[0]+donutWidth * paddingCenterCircleForInfoData + (width / 2);
                     }else{
-                        pos[0] = start[0]+donutWidth * paddingCenterCircleForInfoData * -1 + (width / 2)+ d.text_val_box.width-8;
+                        pos[0] = start[0]+donutWidth * paddingCenterCircleForInfoData * -1 + (width / 2)+ d.text_val_box.width-add_fix_width_for_percent;
                     }
                     pos[1] += height / 2;
-                    midAngle(d2) > (Math.PI/2) && midAngle(d2) < (3 * Math.PI/2) ? pos[1] +=d.text_val_box.height/2 + d.text_name_box.height : pos[1] -=d.text_val_box.height/2;
+                    midAngle(d2) > (Math.PI/2) && midAngle(d2) < (3 * Math.PI/2) ? pos[1] +=d.text_name_box.height/2 + d.text_val_box.height/2 : pos[1] -=d.text_val_box.height/2 - d.percent_box.height/4;
                     return "translate("+ pos +")";
                 };
             }
@@ -254,7 +275,7 @@ function initData(selector,dataset){
                         pos[0] = start[0]+donutWidth * paddingCenterCircleForInfoData * -1 + (width / 2) ;
                     }
                     pos[1] += height / 2;
-                    midAngle(d2) > (Math.PI/2) && midAngle(d2) < (3 * Math.PI/2) ? pos[1] +=d.text_val_box.height+8 : pos[1] -=10;
+                    midAngle(d2) > (Math.PI/2) && midAngle(d2) < (3 * Math.PI/2) ? pos[1] +=d.text_val_box.height - d.text_name_box.height/2+3+add_fix_margin_block  : pos[1] -=d.text_name_box.height/2-3;
                     return "translate("+ pos +")";
                 };
             }
@@ -266,12 +287,12 @@ function initData(selector,dataset){
                     var start = arc.centroid(d2);
                     var pos = arc.centroid(interpolate(t));
                     if (midAngle(d2) < Math.PI){
-                        pos[0] = start[0]+donutWidth * paddingCenterCircleForInfoData + (width / 2) - d.text_val_box.width + d.text_name_box.width-8;
+                        pos[0] = start[0]+donutWidth * paddingCenterCircleForInfoData + (width / 2) - d.text_val_box.width - d.percent_box.width + d.text_name_box.width + add_fix_width_for_name_text;
                     }else{
                         pos[0] = start[0]+donutWidth * paddingCenterCircleForInfoData * -1 + (width / 2) ;
                     }
                     pos[1] += height / 2;
-                    midAngle(d2) > (Math.PI/2) && midAngle(d2) < (3 * Math.PI/2) ? pos[1] +=20 : pos[1] -= d.text_val_box.height-5;
+                    midAngle(d2) > (Math.PI/2) && midAngle(d2) < (3 * Math.PI/2) ? pos[1] +=d.text_name_box.height : pos[1] -= d.text_val_box.height - d.text_name_box.height+add_fix_margin_block;
                     return "translate("+ pos +")";
                 };
             }
