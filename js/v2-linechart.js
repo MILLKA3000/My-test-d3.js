@@ -3,8 +3,10 @@ function initchart(selector,data){
         width       = 1360,
         height      = 700,
         margin      = { top : 70, right : 0, bottom : 50, left : 0 },
-        duration = 10000,
-        i=0;
+        duration = 1000,
+        i= 0,
+        start_date_bettwen = [0,6];
+
 
     var color = [['#1369b2','#3ba5d4']];
 
@@ -14,7 +16,7 @@ function initchart(selector,data){
 
     var x = d3.time.scale()
         .range([0, width])
-        .domain([new Date(data[0].date), new Date(data[6].date)]);
+        .domain([new Date(data[start_date_bettwen[0]].date), new Date(data[start_date_bettwen[1]].date)]);
 
     var y = d3.scale.linear()
         .range([height, margin.top])
@@ -46,7 +48,24 @@ function initchart(selector,data){
         .y0(y(0))
         .y1(function(d) { return y(d.value); });
 
-//------------------------------ Налаштування зуму -------------------------- ------------------------------------------
+//------------------------------ init gradient -------------------------- ------------------------------------------
+    var defs = svg.append( 'defs' );
+    var gradient = defs.append( 'linearGradient' )
+        .attr( 'id', 'grad1' )
+        .attr('x1','0%')
+        .attr('y1','50%')
+        .attr('x2','0%')
+        .attr('y2','100%')
+
+    gradient.append( 'stop' )
+        .attr( 'offset', '50%' )
+        .attr( 'style', 'stop-color:'+color[i][0]+';stop-opacity:1' );
+    gradient.append( 'stop' )
+        .attr( 'offset', '100%' )
+        .attr( 'style', 'stop-color:'+color[i][1]+';stop-opacity:1' );
+
+
+//------------------------------ setting zoom -------------------------- ------------------------------------------
 
 
     var zoom = d3.behavior.zoom()
@@ -61,6 +80,9 @@ function initchart(selector,data){
         zoom.translate([tx, t[1]]);
         redraw();
     });
+
+//------------------------------  -------------------------- ------------------------------------------
+
     data.id.forEach(function(id){
         drawchart(svg,
             data.filter(function( datum ) { return datum.id === id; }),
@@ -71,61 +93,117 @@ function initchart(selector,data){
 
     drawXaxes(svg);
     drawYaxes(svg);
+    rescale(start_date_bettwen[0],start_date_bettwen[1]);
 
-//------------------------------ Невидимий квадрат для можливості зумити по вісі Х -------------------------- ------------------------------------------
-    svg.append("rect")
-        .attr("class", "pane")
-        .attr("width", width)
-        .attr("height", height)
-        .call(zoom);
+//------------------------------ Rect for zoom -------------------------- ------------------------------------------
+//    svg.append("rect")
+//        .attr("class", "pane")
+//        .attr("width", width)
+//        .attr("height", height)
+//        .call(zoom);
 
 
 
-//------------------------------ Малює графік -------------------------- ------------------------------------------
+//------------------------------ Draw path -------------------------- ------------------------------------------
     function drawchart(svg,data,color,valueline){
         var Graph = svg.append( 'g')
             .append( 'path' )
             .datum( data )
             .attr('d', area )
-            .attr('fill' ,color)
-            .attr('opacity',.7)
+//            .attr('fill' ,color)
+            .attr('fill','url(#grad1)')
+            .attr('opacity',.9)
             .attr("class", "area")
             .attr('stroke',valueline)
-            .attr("stroke-width","2")
+            .attr("stroke-width","4")
 
     }
-//------------------------------ Перемальовує графік при зумі -------------------------- ------------------------------------------
+//------------------------------ redraw zoom -------------------------- ------------------------------------------
     function redraw() {
-        svg.selectAll(".x.axis")
-            .call(xAxis)
-        svg.selectAll("path.area").attr("d", area);
+        var x_p = svg.select(".x.axis")
+            .call(xAxis);
+        svg.selectAll("path.area")
+            .attr("d", area);
+        var line_x = x_p.selectAll('.tick');
+
+        line_x.append("circle")
+            .attr("r",5)
+            .attr("fill",'grey')
+            .attr("stroke-width", 3)
+            .attr('class','circle_dot')
+            .attr("stroke", "white")
+            .attr("opacity",.5);
+
+        line_x.append('line')
+            .attr('y1', 0 - height+65)
+            .attr('y2', 1.5)
+            .attr("stroke-width", 2)
+            .attr("stroke", "grey")
+            .attr("opacity",.5);
     }
-//------------------------------ Вісь Х -------------------------- ------------------------------------------
+//------------------------------ X -------------------------- ------------------------------------------
     function drawXaxes(svg){
         var xAxisGroup = svg.append( 'g' )
             .attr( 'class', 'x axis' )
             .attr( 'transform', 'translate( 0,' + ( height - margin.bottom) + ')');
-        svg.select(".x.axis")
+        var x_p = svg.select(".x.axis")
             .call(xAxis);
-        svg.selectAll('.x.axis.tick')
-            .attr('opacity',1);
+        var line_x = x_p.selectAll('.tick');
+
+        line_x.append("circle")
+            .attr("r",5)
+            .attr("fill",'grey')
+            .attr("stroke-width", 3)
+            .attr('class','circle_dot')
+            .attr("stroke", "white")
+            .attr("opacity",.5);
+
+        line_x.append('line')
+            .attr('y1', 0 - height+65)
+            .attr('y2', 1.5)
+            .attr("stroke-width", 2)
+            .attr("stroke", "grey")
+            .attr("opacity",.5);
+
+
     }
 
-    rescale(data.length - 7,data.length - 1);
-
+//------------------------------ Rescale -------------------------- ------------------------------------------
     function rescale(x1,x2){
         x.domain([data[x1].date, data[x2].date]);
-//        x.domain([data[14].date, data[21].date]);
-//    x.domain([data[data.length - 7].date, data[data.length - 1].date]);
-        svg.selectAll('.area').transition().duration(duration/2).ease('linear')
-            .attr("d", area);
-        svg.selectAll('.x.axis').transition().duration(duration/2).ease('linear')
+        svg.selectAll('.area').transition().duration(duration/6).ease('linear')
+            .attr("d", area)
+            .each("end", function() {
+                if (data[x2].date>=max_date){
+                    svg.append("rect")
+                        .attr("class", "pane")
+                        .attr("width", width)
+                        .attr("height", height)
+                        .call(zoom);
+                    zoom.translate();
+                }else {rescale(x1+1,x2+1);}
+            });
+        svg.selectAll('.x.axis').transition().duration(duration/6).ease('linear')
             .call(xAxis);
-        svg.selectAll('x.axis .tick').transition()
-                .attr('opacity',1);
+        var line_x = svg.selectAll('.x .tick');
+
+        line_x.append("circle")
+            .attr("r",5)
+            .attr("fill",'grey')
+            .attr("stroke-width", 3)
+            .attr('class','circle_dot')
+            .attr("stroke", "white")
+            .attr("opacity",.5);
+
+        line_x.append('line')
+            .attr('y1', 0 - height+65)
+            .attr('y2', 1.5)
+            .attr("stroke-width", 2)
+            .attr("stroke", "grey")
+            .attr("opacity",.5);
     }
 
-//------------------------------ Вісь Y -------------------------- ------------------------------------------
+//------------------------------ Y -------------------------- ------------------------------------------
     function drawYaxes(svg){
         var yAxisGroup = svg.append( 'g' )
             .attr( 'class', 'y axis' )
@@ -180,7 +258,7 @@ function initchart(selector,data){
 
     }
 
-//------------------------------ Хз чому стандартна з багом, Так виводить без бага -------------------------- ------------------------------------------
+//------------------------------ Fix data view -------------------------- ------------------------------------------
     function timeFormat(formats) {
         return function(date) {
             var i = formats.length - 1, f = formats[i];
@@ -189,21 +267,11 @@ function initchart(selector,data){
         };
     }
 }
-//------------------------------ Ініціалізація і підготовка даних -------------------------- ------------------------------------------
-//function init() {
-//    d3.json("json/v2-data.json",function(data){
-//        parseDate = d3.time.format("%Y-%m-%e").parse;
-//        data.forEach(function(d) {
-//            d.date = parseDate(d.date);
-//            d.value = +d.value;
-//        });
-//        initchart('#chart',data);
-//    });
-//}
 
+//-------------------------------------- Get and transform data from json -----------------------------------------
 function init() {
     d3.json("json/data_for_line_chart.json",function(data){
-        dataset=[],
+        var dataset=[],
             id = [];
         parseDate = d3.time.format("%Y-%m-%e").parse;
         data.data.forEach(function(type){

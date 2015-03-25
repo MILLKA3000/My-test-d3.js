@@ -6,10 +6,10 @@
 .domain {
     display: none;
 }
-.tick{
-
-font-size:  18px;
+.y .tick{
+    font-size:  18px;
     fill:#000;
+    font-family: open_sansregular;
 }
 .line {
     stroke-width: 2;
@@ -39,4 +39,5 @@ rect.pane {
 }
 .x .tick text{
     fill:white;
+    font-family: open_sansregular;
 }
