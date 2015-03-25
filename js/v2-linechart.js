@@ -3,7 +3,16 @@ function initchart(selector,data){
         width       = 1360,
         height      = 700,
         margin      = { top : 70, right : 0, bottom : 50, left : 0 },
-        duration = 10000;
+        duration = 10000,
+        i=0;
+
+    var color = [
+                ['#F3D364','#F2C52C'],
+                ['#4DBBF3','#0CA4EF'],
+                ['#A17CE1','#C063ED'],
+                ['#ffffff','lightgrey'],
+                ['#0071c5','lightred']
+                ];
 
     var max_value = d3.max(data, function(d) { return d.value; }),
         max_date = d3.max(data, function(d) { return d.date; }),
@@ -11,7 +20,7 @@ function initchart(selector,data){
 
     var x = d3.time.scale()
         .range([0, width])
-        .domain([new Date(data[0].date), d3.time.day.offset(new Date(data[data.length - 27].date), 1)]);
+        .domain([new Date(data[0].date), d3.time.day.offset(new Date(data[data.length - 7].date), 1)]);
 
     var y = d3.scale.linear()
         .range([height, margin.top])
@@ -44,10 +53,13 @@ function initchart(selector,data){
         .y1(function(d) { return y(d.value); });
 
 //------------------------------ Налаштування зуму -------------------------- ------------------------------------------
+
+
     var zoom = d3.behavior.zoom()
         .x(x)
         .scaleExtent([1,1]);
-
+    svg.call(zoom);
+    zoom.on('zoom',redraw);
     zoom.on('zoom', function() {
         var t = zoom.translate(),
         tx = t[0];
@@ -57,10 +69,16 @@ function initchart(selector,data){
         redraw();
     });
 
-    drawchart(svg,data,'#F3D364','#F2C52C');
-//    drawchart(svg,data.filter(function( datum ) { return datum.type === 'INTEL'; }),'#F3D364','#F2C52C');
-//    drawchart(svg,data.filter(function( datum ) { return datum.type === 'DELL'; }),'#4DBBF3','#0CA4EF');
-//    drawchart(svg,data.filter(function( datum ) { return datum.type === 'ASUS'; }),'#A17CE1','#C063ED');
+
+
+    data.id.forEach(function(id){
+        drawchart(svg,
+            data.filter(function( datum ) { return datum.id === id; }),
+            color[i][0],
+            color[i][1]);
+        i++;
+    });
+
     drawXaxes(svg);
     drawYaxes(svg);
 
@@ -78,7 +96,7 @@ function initchart(selector,data){
             .datum( data )
             .attr('d', area )
             .attr('fill' ,color)
-            .attr('opacity',.6)
+            .attr('opacity',.7)
             .attr("class", "area")
             .attr('stroke',valueline)
             .attr("stroke-width","2")
@@ -89,9 +107,13 @@ function initchart(selector,data){
     }
 //------------------------------ Перемальовує графік при зумі -------------------------- ------------------------------------------
     function redraw() {
-        svg.selectAll(".x.axis").call(xAxis)
-            .selectAll('text')
-                .attr("fill","#ffffff");
+        svg.selectAll(".x.axis")
+            .call(xAxis)
+            .attr("transform", "translate(" + (x(max_date)- width) + ",0)");
+
+//        svg.selectAll(".x.axis")
+//            .selectAll('text')
+//                .attr("fill","#ffffff");
         svg.selectAll("path.area").attr("d", area);
     }
 //------------------------------ Вісь Х -------------------------- ------------------------------------------
@@ -104,11 +126,9 @@ function initchart(selector,data){
             .call(xAxis)
             .selectAll('text')
                 .attr("fill","#ffffff");
-
-        x_p.transition().selectAll(".tick text:first-child").attr('fill','none');
         //------------------------------ для анімації є баг дата криво крутиться ------------------------------------------
 //        x_p.transition().duration(duration)
-//                .attr("transform", "translate(-"+ (x(max_date)- width) +","+ ( height - margin.bottom) + ")");
+//                .attr("transform", "translate(-"+ (x(max_date)- width) +",0)");
         //------------------------------ --------------------------------------- ------------------------------------------
     }
 //------------------------------ Вісь Y -------------------------- ------------------------------------------
@@ -160,14 +180,26 @@ function initchart(selector,data){
 //}
 
 function init() {
-    d3.json("json/data_for_line_chart.json",function(data){
-        data = data.data[0].data;
+    d3.json("json/test_data.json",function(data){
+        dataset=[],
+            id = [];
         parseDate = d3.time.format("%Y-%m-%e").parse;
-        data.forEach(function(d) {
-            d.date = parseDate(d.date);
-            d.value = +d.value;
+        data.data.forEach(function(type){
+            type.data.forEach(function(d){
+                datas = [];
+                datas.date = parseDate(d.date);
+                datas.value = +d.value;
+                datas.id = type.id;
+                datas.display = type.display;
+                dataset.push(datas);
+
+            });
+            id.push(type.id);
         });
-        initchart('#chart',data);
+        dataset.id = id;
+        dataset.system = data.system;
+        console.log(dataset);
+        initchart('#chart',dataset);
     });
 }
 

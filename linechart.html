@@ -45,6 +45,9 @@
 <script>
 
     function visualizeDownloadTimeline( selector, data ) {
+        var customTimeFormat = timeFormat([
+            [d3.time.format("%b %d"), function(d) { return d.getDate(); }]
+        ]);
         var d3container = d3.select( selector ),
                 width       = d3container.attr( 'width' ),
                 height      = d3container.attr( 'height' ),
@@ -54,12 +57,13 @@
                         .attr( 'height', height )
                         .attr( 'width', width ),
 
+
                 x     = d3.scale.ordinal()
                         .rangeRoundBands( [ 0, width ] )
                         .domain(
                                 data.map( function( d ) { return d.date; } )
                         ),
-                xAxis = d3.svg.axis().scale( x ).orient( 'bottom' ),
+                xAxis = d3.svg.axis().scale( x ).orient( 'bottom' ).tickFormat(customTimeFormat),
 
                 y     = d3.scale.linear()
                         .range( [ height - margin.bottom * 1.5, margin.top ] )
@@ -123,9 +127,15 @@
                 .attr( 'in', 'SourceGraphic' );
         //------------------------------------------------------------end filters
 
-        drawArea(svg,data.filter(function( datum ) { return datum.type === 'INTEL'; }),1);
+        drawArea(svg,data.filter(function( datum ) { return datum.id === 'Twitter'; }),1);
         drawYaxes(svg);
-
+        function timeFormat(formats) {
+            return function(date) {
+                var i = formats.length - 1, f = formats[i];
+                while (!f[1](date)) f = formats[--i];
+                return f[0](date);
+            };
+        }
         function drawYaxes(svg){
             svg.select(".y.axis")
                     .transition()
@@ -177,9 +187,33 @@
 
         }
     }
+//    function init() {
+//        d3.json("json/data.json",function(data){
+//            visualizeDownloadTimeline('.ui__timeline',data);
+//        });
+//    }
+
     function init() {
-        d3.json("json/data.json",function(data){
-            visualizeDownloadTimeline('.ui__timeline',data);
+        d3.json("json/test_data.json",function(data){
+            dataset=[],
+                    id = [];
+            parseDate = d3.time.format("%Y-%m-%e").parse;
+            data.data.forEach(function(type){
+                type.data.forEach(function(d){
+                    datas = [];
+                    datas.date = parseDate(d.date);
+                    datas.value = +d.value;
+                    datas.id = type.id;
+                    datas.display = type.display;
+                    dataset.push(datas);
+
+                });
+                id.push(type.id);
+            });
+            dataset.id = id;
+            dataset.system = data.system;
+//            console.log(dataset);
+            visualizeDownloadTimeline('.ui__timeline',dataset);
         });
     }
 
