@@ -1,6 +1,6 @@
 .overlay {
-    fill: none;
-    pointer-events: all;
+    /*fill: none;*/
+    /*pointer-events: all;*/
 }
 
 .domain {
@@ -22,3 +22,21 @@ rect.pane {
     pointer-events: all;
 }
 
+.horizontalGrid{
+    fill : none;
+    shape-rendering : crispEdges;
+    stroke : grey;
+    stroke-width : 1px;
+    opacity: 0.2;
+}
+
+.verticalGrid{
+    fill : none;
+    shape-rendering : crispEdges;
+    stroke : grey;
+    stroke-width : 1px;
+    opacity: 0.4;
+}
+.x .tick text{
+    fill:white;
+}

@@ -6,13 +6,7 @@ function initchart(selector,data){
         duration = 10000,
         i=0;
 
-    var color = [
-                ['#F3D364','#F2C52C'],
-                ['#4DBBF3','#0CA4EF'],
-                ['#A17CE1','#C063ED'],
-                ['#ffffff','lightgrey'],
-                ['#0071c5','lightred']
-                ];
+    var color = [['#1369b2','#3ba5d4']];
 
     var max_value = d3.max(data, function(d) { return d.value; }),
         max_date = d3.max(data, function(d) { return d.date; }),
@@ -20,7 +14,7 @@ function initchart(selector,data){
 
     var x = d3.time.scale()
         .range([0, width])
-        .domain([new Date(data[0].date), d3.time.day.offset(new Date(data[data.length - 7].date), 1)]);
+        .domain([new Date(data[0].date), new Date(data[6].date)]);
 
     var y = d3.scale.linear()
         .range([height, margin.top])
@@ -58,8 +52,7 @@ function initchart(selector,data){
     var zoom = d3.behavior.zoom()
         .x(x)
         .scaleExtent([1,1]);
-    svg.call(zoom);
-    zoom.on('zoom',redraw);
+
     zoom.on('zoom', function() {
         var t = zoom.translate(),
         tx = t[0];
@@ -68,9 +61,6 @@ function initchart(selector,data){
         zoom.translate([tx, t[1]]);
         redraw();
     });
-
-
-
     data.id.forEach(function(id){
         drawchart(svg,
             data.filter(function( datum ) { return datum.id === id; }),
@@ -89,10 +79,12 @@ function initchart(selector,data){
         .attr("height", height)
         .call(zoom);
 
+
+
 //------------------------------ Малює графік -------------------------- ------------------------------------------
     function drawchart(svg,data,color,valueline){
-        var Graph = svg.append( 'g');
-        Graph.append( 'path' )
+        var Graph = svg.append( 'g')
+            .append( 'path' )
             .datum( data )
             .attr('d', area )
             .attr('fill' ,color)
@@ -100,37 +92,39 @@ function initchart(selector,data){
             .attr("class", "area")
             .attr('stroke',valueline)
             .attr("stroke-width","2")
-        //------------------------------ для анімації -------------------------- ------------------------------------------
-//                .transition().duration(duration)
-//                .attr("transform", "translate(-"+ (x(max_date)- width) +",0)");
-        //------------------------------ --------------------------------------- ------------------------------------------
+
     }
 //------------------------------ Перемальовує графік при зумі -------------------------- ------------------------------------------
     function redraw() {
         svg.selectAll(".x.axis")
             .call(xAxis)
-            .attr("transform", "translate(" + (x(max_date)- width) + ",0)");
-
-//        svg.selectAll(".x.axis")
-//            .selectAll('text')
-//                .attr("fill","#ffffff");
         svg.selectAll("path.area").attr("d", area);
     }
 //------------------------------ Вісь Х -------------------------- ------------------------------------------
     function drawXaxes(svg){
-
         var xAxisGroup = svg.append( 'g' )
             .attr( 'class', 'x axis' )
             .attr( 'transform', 'translate( 0,' + ( height - margin.bottom) + ')');
-        var x_p = svg.select(".x.axis")
-            .call(xAxis)
-            .selectAll('text')
-                .attr("fill","#ffffff");
-        //------------------------------ для анімації є баг дата криво крутиться ------------------------------------------
-//        x_p.transition().duration(duration)
-//                .attr("transform", "translate(-"+ (x(max_date)- width) +",0)");
-        //------------------------------ --------------------------------------- ------------------------------------------
+        svg.select(".x.axis")
+            .call(xAxis);
+        svg.selectAll('.x.axis.tick')
+            .attr('opacity',1);
     }
+
+    rescale(data.length - 7,data.length - 1);
+
+    function rescale(x1,x2){
+        x.domain([data[x1].date, data[x2].date]);
+//        x.domain([data[14].date, data[21].date]);
+//    x.domain([data[data.length - 7].date, data[data.length - 1].date]);
+        svg.selectAll('.area').transition().duration(duration/2).ease('linear')
+            .attr("d", area);
+        svg.selectAll('.x.axis').transition().duration(duration/2).ease('linear')
+            .call(xAxis);
+        svg.selectAll('x.axis .tick').transition()
+                .attr('opacity',1);
+    }
+
 //------------------------------ Вісь Y -------------------------- ------------------------------------------
     function drawYaxes(svg){
         var yAxisGroup = svg.append( 'g' )
@@ -158,6 +152,34 @@ function initchart(selector,data){
 
 
     }
+    createsGrid(data);
+    function createsGrid(data) {
+        var grid = svg.selectAll("line.horizontalGrid").data(y.ticks(50));
+        grid.enter()
+            .append("line")
+            .attr("class","horizontalGrid");
+        grid.exit().remove();
+        grid.attr({
+            "x1":0,
+            "x2": width,
+            "y1": function (d) { return y(d); },
+            "y2": function (d) { return y(d); }
+        });
+
+//        var grid = svg.selectAll("line.verticalGrid").data(x.ticks());
+//        grid.enter()
+//            .append("line")
+//            .attr("class","verticalGrid");
+//        grid.exit().remove();
+//        grid.attr({
+//            "x1":function (d) { return x(d); },
+//            "x2":function (d) { return x(d); },
+//            "y1": 50,
+//            "y2": height
+//        });
+
+    }
+
 //------------------------------ Хз чому стандартна з багом, Так виводить без бага -------------------------- ------------------------------------------
     function timeFormat(formats) {
         return function(date) {
@@ -180,7 +202,7 @@ function initchart(selector,data){
 //}
 
 function init() {
-    d3.json("json/test_data.json",function(data){
+    d3.json("json/data_for_line_chart.json",function(data){
         dataset=[],
             id = [];
         parseDate = d3.time.format("%Y-%m-%e").parse;
