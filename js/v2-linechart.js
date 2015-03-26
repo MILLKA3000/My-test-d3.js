@@ -119,8 +119,17 @@ Redraw all lines after zoom
             .call(xAxis);
         svg.selectAll("path.area")
             .attr("d", area);
+
         var line_x = x_p.selectAll('.tick')
             .attr("id", function(d, i) { return ("idlabel_" + i)});
+
+            line_x.each(function() {
+                if (get_day(line_x.attr('#idlabel_7'))===true ){
+                    var smile = svg.select("#idlabel_"+7);
+                    redrawSmiles(smile,7)
+                }
+            });
+
 
         redrawVerticalLines(line_x)
 
@@ -128,6 +137,7 @@ Redraw all lines after zoom
 
 /*
  Draw X axes
+ param {obj} svg = svg;
  */
 
     function drawXaxes(svg){
@@ -145,6 +155,8 @@ Redraw all lines after zoom
 
 /*
  Rescale after moving domain data
+ param {int} x1 = start date for display
+ param {int} x2 = end date for display
  */
 
     function rescale(x1,x2){
@@ -167,7 +179,7 @@ Redraw all lines after zoom
         svg.selectAll('.x.axis').transition().duration(duration/6).ease('linear')
             .call(xAxis)
             .each("end", function() {
-                if (get_day(x2)==true ){
+                if (get_day(x2)===true ){
                     var smile = svg.select("#idlabel_"+x2);
                     redrawSmiles(smile,x2)
                 }
@@ -175,9 +187,6 @@ Redraw all lines after zoom
 
         redrawVerticalLines(line_x);
 
-        function get_day(day){
-            return ((day % 7)==0) ? true : false ;
-        }
     }
 /*
  Redraw vertical lines and circles
@@ -242,6 +251,7 @@ Redraw all lines after zoom
     }
 /*
 Draw Y axes
+ param {obj} svg = svg;
  */
     function drawYaxes(svg){
         var yAxisGroup = svg.append( 'g' )
@@ -273,9 +283,10 @@ Draw Y axes
 /*
 Create horizontal grid
 */
-
-    function createGrid(data) {
-        var grid = svg.selectAll("line.horizontalGrid").data(y.ticks(50));
+    function createGrid() {
+        var g = svg.append('g');
+        var grid = g.selectAll("line.horizontalGrid")
+            .data(y.ticks(50));
         grid.enter()
             .append("line")
             .attr("class","horizontalGrid");
@@ -286,11 +297,19 @@ Create horizontal grid
             "y1": function (d) { return y(d); },
             "y2": function (d) { return y(d); }
         });
-
     }
 
 /*
+ Get num day
+ param {int} day
+ */
+
+    function get_day(day){
+        return ((day % 7)==0) ? true : false ;
+    }
+/*
 Fix data view
+param {date} formats
  */
     function timeFormat(formats) {
         return function(date) {
@@ -326,7 +345,7 @@ function init() {
         dataset.id = id;
         dataset.system = data.system;
         dataset.system ={
-            "duration" : 10000,
+            "duration" : 100,
             "height" : 680,
             "width" : 1360,
             "start_date_bettwen" : [0,7],
