@@ -3,9 +3,9 @@ function initchart(selector,data){
         width       = 1360,
         height      = 700,
         margin      = { top : 70, right : 0, bottom : 50, left : 0 },
-        duration = 1000,
+        duration = 10000,
         i= 0,
-        start_date_bettwen = [0,6];
+        start_date_bettwen = [0,7];
 
 
     var color = [['#1369b2','#3ba5d4']];
@@ -64,10 +64,7 @@ function initchart(selector,data){
         .attr( 'offset', '100%' )
         .attr( 'style', 'stop-color:'+color[i][1]+';stop-opacity:1' );
 
-
-//------------------------------ setting zoom -------------------------- ------------------------------------------
-
-
+// - setting zoom
     var zoom = d3.behavior.zoom()
         .x(x)
         .scaleExtent([1,1]);
@@ -81,8 +78,6 @@ function initchart(selector,data){
         redraw();
     });
 
-//------------------------------  -------------------------- ------------------------------------------
-
     data.id.forEach(function(id){
         drawchart(svg,
             data.filter(function( datum ) { return datum.id === id; }),
@@ -90,27 +85,23 @@ function initchart(selector,data){
             color[i][1]);
         i++;
     });
-
+    createGrid(data);
     drawXaxes(svg);
     drawYaxes(svg);
     rescale(start_date_bettwen[0],start_date_bettwen[1]);
 
-//------------------------------ Rect for zoom -------------------------- ------------------------------------------
-//    svg.append("rect")
-//        .attr("class", "pane")
-//        .attr("width", width)
-//        .attr("height", height)
-//        .call(zoom);
-
-
-
-//------------------------------ Draw path -------------------------- ------------------------------------------
+/*
+    Draw path
+    param {obj} svg = svg;
+    param {obj} data = data.json;
+    param {color scheme} color = color graph, or id gradient
+    param {color scheme} valueline = color stroke;
+ */
     function drawchart(svg,data,color,valueline){
         var Graph = svg.append( 'g')
             .append( 'path' )
             .datum( data )
             .attr('d', area )
-//            .attr('fill' ,color)
             .attr('fill','url(#grad1)')
             .attr('opacity',.9)
             .attr("class", "area")
@@ -118,59 +109,77 @@ function initchart(selector,data){
             .attr("stroke-width","4")
 
     }
-//------------------------------ redraw zoom -------------------------- ------------------------------------------
+
+/*
+Redraw all lines after zoom
+ */
+
     function redraw() {
         var x_p = svg.select(".x.axis")
             .call(xAxis);
         svg.selectAll("path.area")
             .attr("d", area);
-        var line_x = x_p.selectAll('.tick');
+        var line_x = x_p.selectAll('.tick')
+//            .attr("id", function(d, i) { return ("idlabel_" + i)});
 
         line_x.append("circle")
             .attr("r",5)
-            .attr("fill",'grey')
+            .attr("fill",'lightgray')
             .attr("stroke-width", 3)
             .attr('class','circle_dot')
             .attr("stroke", "white")
             .attr("opacity",.5);
 
         line_x.append('line')
-            .attr('y1', 0 - height+65)
+            .attr('y1', 0 - 0 - height+(height/4))
             .attr('y2', 1.5)
             .attr("stroke-width", 2)
-            .attr("stroke", "grey")
+            .attr("stroke", "lightgray")
             .attr("opacity",.5);
     }
-//------------------------------ X -------------------------- ------------------------------------------
+
+/*
+ Draw X axes
+ */
+
     function drawXaxes(svg){
         var xAxisGroup = svg.append( 'g' )
             .attr( 'class', 'x axis' )
             .attr( 'transform', 'translate( 0,' + ( height - margin.bottom) + ')');
         var x_p = svg.select(".x.axis")
             .call(xAxis);
-        var line_x = x_p.selectAll('.tick');
+        var line_x = x_p.selectAll('.tick')
+            .attr("id", function(d, i) { return ("idlabel_" + i)});
 
         line_x.append("circle")
             .attr("r",5)
-            .attr("fill",'grey')
+            .attr("fill",'lightgray')
             .attr("stroke-width", 3)
             .attr('class','circle_dot')
             .attr("stroke", "white")
             .attr("opacity",.5);
 
         line_x.append('line')
-            .attr('y1', 0 - height+65)
+            .attr('y1', 0 - 0 - height+(height/4))
             .attr('y2', 1.5)
             .attr("stroke-width", 2)
-            .attr("stroke", "grey")
+            .attr("stroke", "lightgray")
             .attr("opacity",.5);
 
 
     }
 
-//------------------------------ Rescale -------------------------- ------------------------------------------
+/*
+ Rescale after moving domain data
+ */
+
     function rescale(x1,x2){
         x.domain([data[x1].date, data[x2].date]);
+
+
+        var line_x = svg.selectAll('.x .tick')
+            .attr("id", function(d, i) { return ("idlabel_" + i)});
+
         svg.selectAll('.area').transition().duration(duration/6).ease('linear')
             .attr("d", area)
             .each("end", function() {
@@ -180,30 +189,71 @@ function initchart(selector,data){
                         .attr("width", width)
                         .attr("height", height)
                         .call(zoom);
-                    zoom.translate();
+//                    zoom.translate();
                 }else {rescale(x1+1,x2+1);}
             });
+
         svg.selectAll('.x.axis').transition().duration(duration/6).ease('linear')
-            .call(xAxis);
-        var line_x = svg.selectAll('.x .tick');
+            .call(xAxis)
+            .each("end", function() {
+                if (get_day(x2)==true ){
+                    var smile = svg.select("#idlabel_"+x2);
+                    smile.append('rect')
+                        .attr('x',0)
+                        .attr('y',0 - height+(height/4)-22)
+                        .attr('width',0)
+                        .attr('height',1)
+                        .transition().duration(duration/20)
+                            .attr('y',0 - height+(height/4)-45)
+                            .attr('x',-130)
+                            .attr('width',130)
+                            .attr('height',40)
+                            .attr('fill','white')
+                            .attr('stroke','grey')
+                            .attr('stroke-width',1);
+                    smile.append("circle")
+                        .attr('fill','white')
+                        .attr("r",5)
+                        .attr("opacity",1)
+                        .transition().duration(duration/20)
+                            .attr("r",25)
+                            .attr('cy', 0 - height+(height/4)-25)
+                            .attr("fill",'white')
+                            .attr("stroke-width", 1)
+                            .attr('class','circle_dot')
+                            .attr("stroke", "grey")
+                            .attr("opacity",1)
+                    smile.append("text")
+                        .attr( 'transform', 'translate( -100,' + ( height+(height/4)-25) + ')')
+                        .transition()
+                        .attr('fill','black')
+                        .text('asdasd');
+                }
+            });
 
         line_x.append("circle")
             .attr("r",5)
-            .attr("fill",'grey')
+            .attr("fill",'lightgray')
             .attr("stroke-width", 3)
             .attr('class','circle_dot')
             .attr("stroke", "white")
             .attr("opacity",.5);
 
         line_x.append('line')
-            .attr('y1', 0 - height+65)
+            .attr('y1', 0 - height+(height/4))
             .attr('y2', 1.5)
             .attr("stroke-width", 2)
-            .attr("stroke", "grey")
+            .attr("stroke", "lightgray")
             .attr("opacity",.5);
+
+        function get_day(day){
+            return ((day % 7)==0) ? true : false ;
+        }
     }
 
-//------------------------------ Y -------------------------- ------------------------------------------
+/*
+Draw Y axes
+ */
     function drawYaxes(svg){
         var yAxisGroup = svg.append( 'g' )
             .attr( 'class', 'y axis' )
@@ -230,8 +280,12 @@ function initchart(selector,data){
 
 
     }
-    createsGrid(data);
-    function createsGrid(data) {
+
+/*
+Create horizontal grid
+*/
+
+    function createGrid(data) {
         var grid = svg.selectAll("line.horizontalGrid").data(y.ticks(50));
         grid.enter()
             .append("line")
@@ -244,21 +298,11 @@ function initchart(selector,data){
             "y2": function (d) { return y(d); }
         });
 
-//        var grid = svg.selectAll("line.verticalGrid").data(x.ticks());
-//        grid.enter()
-//            .append("line")
-//            .attr("class","verticalGrid");
-//        grid.exit().remove();
-//        grid.attr({
-//            "x1":function (d) { return x(d); },
-//            "x2":function (d) { return x(d); },
-//            "y1": 50,
-//            "y2": height
-//        });
-
     }
 
-//------------------------------ Fix data view -------------------------- ------------------------------------------
+/*
+Fix data view
+ */
     function timeFormat(formats) {
         return function(date) {
             var i = formats.length - 1, f = formats[i];
@@ -268,7 +312,9 @@ function initchart(selector,data){
     }
 }
 
-//-------------------------------------- Get and transform data from json -----------------------------------------
+/*
+ Get and transform data from json
+ */
 function init() {
     d3.json("json/data_for_line_chart.json",function(data){
         var dataset=[],

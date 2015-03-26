@@ -2,15 +2,19 @@
     /*fill: none;*/
     /*pointer-events: all;*/
 }
-
+svg{
+    background-color: #F5F6F5 ;
+}
 .domain {
     display: none;
 }
+
 .y .tick{
     font-size:  18px;
     fill:#000;
     font-family: open_sansregular;
 }
+
 .line {
     stroke-width: 2;
     fill: none;
@@ -30,13 +34,14 @@ rect.pane {
     opacity: 0.2;
 }
 
-.verticalGrid{
-    fill : none;
-    shape-rendering : crispEdges;
-    stroke : grey;
-    stroke-width : 1px;
-    opacity: 0.4;
-}
+/*.verticalGrid{*/
+    /*fill : none;*/
+    /*shape-rendering : crispEdges;*/
+    /*stroke : white;*/
+    /*stroke-width : 1px;*/
+    /*opacity: 0.4;*/
+/*}*/
+
 .x .tick text{
     fill:white;
     font-family: open_sansregular;
