@@ -34,13 +34,10 @@ rect.pane {
     opacity: 0.2;
 }
 
-/*.verticalGrid{*/
-    /*fill : none;*/
-    /*shape-rendering : crispEdges;*/
-    /*stroke : white;*/
-    /*stroke-width : 1px;*/
-    /*opacity: 0.4;*/
-/*}*/
+.x .tick .days{
+    fill:grey;
+    font-family: open_sansextrabold;
+}
 
 .x .tick text{
     fill:white;

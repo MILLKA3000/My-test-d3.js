@@ -1,14 +1,14 @@
 function initchart(selector,data){
     var d3container = d3.select( selector ),
-        width       = 1360,
-        height      = 700,
+        width       = data.system.width,
+        height      = data.system.height,
         margin      = { top : 70, right : 0, bottom : 50, left : 0 },
-        duration = 10000,
+        duration = data.system.duration,
         i= 0,
-        start_date_bettwen = [0,7];
+        start_date_bettwen = data.system.start_date_bettwen;
 
 
-    var color = [['#1369b2','#3ba5d4']];
+    var color = data.system.colors;
 
     var max_value = d3.max(data, function(d) { return d.value; }),
         max_date = d3.max(data, function(d) { return d.date; }),
@@ -120,22 +120,10 @@ Redraw all lines after zoom
         svg.selectAll("path.area")
             .attr("d", area);
         var line_x = x_p.selectAll('.tick')
-//            .attr("id", function(d, i) { return ("idlabel_" + i)});
+            .attr("id", function(d, i) { return ("idlabel_" + i)});
 
-        line_x.append("circle")
-            .attr("r",5)
-            .attr("fill",'lightgray')
-            .attr("stroke-width", 3)
-            .attr('class','circle_dot')
-            .attr("stroke", "white")
-            .attr("opacity",.5);
+        redrawVerticalLines(line_x)
 
-        line_x.append('line')
-            .attr('y1', 0 - 0 - height+(height/4))
-            .attr('y2', 1.5)
-            .attr("stroke-width", 2)
-            .attr("stroke", "lightgray")
-            .attr("opacity",.5);
     }
 
 /*
@@ -151,21 +139,7 @@ Redraw all lines after zoom
         var line_x = x_p.selectAll('.tick')
             .attr("id", function(d, i) { return ("idlabel_" + i)});
 
-        line_x.append("circle")
-            .attr("r",5)
-            .attr("fill",'lightgray')
-            .attr("stroke-width", 3)
-            .attr('class','circle_dot')
-            .attr("stroke", "white")
-            .attr("opacity",.5);
-
-        line_x.append('line')
-            .attr('y1', 0 - 0 - height+(height/4))
-            .attr('y2', 1.5)
-            .attr("stroke-width", 2)
-            .attr("stroke", "lightgray")
-            .attr("opacity",.5);
-
+        redrawVerticalLines(line_x)
 
     }
 
@@ -175,8 +149,6 @@ Redraw all lines after zoom
 
     function rescale(x1,x2){
         x.domain([data[x1].date, data[x2].date]);
-
-
         var line_x = svg.selectAll('.x .tick')
             .attr("id", function(d, i) { return ("idlabel_" + i)});
 
@@ -189,7 +161,6 @@ Redraw all lines after zoom
                         .attr("width", width)
                         .attr("height", height)
                         .call(zoom);
-//                    zoom.translate();
                 }else {rescale(x1+1,x2+1);}
             });
 
@@ -198,39 +169,21 @@ Redraw all lines after zoom
             .each("end", function() {
                 if (get_day(x2)==true ){
                     var smile = svg.select("#idlabel_"+x2);
-                    smile.append('rect')
-                        .attr('x',0)
-                        .attr('y',0 - height+(height/4)-22)
-                        .attr('width',0)
-                        .attr('height',1)
-                        .transition().duration(duration/20)
-                            .attr('y',0 - height+(height/4)-45)
-                            .attr('x',-130)
-                            .attr('width',130)
-                            .attr('height',40)
-                            .attr('fill','white')
-                            .attr('stroke','grey')
-                            .attr('stroke-width',1);
-                    smile.append("circle")
-                        .attr('fill','white')
-                        .attr("r",5)
-                        .attr("opacity",1)
-                        .transition().duration(duration/20)
-                            .attr("r",25)
-                            .attr('cy', 0 - height+(height/4)-25)
-                            .attr("fill",'white')
-                            .attr("stroke-width", 1)
-                            .attr('class','circle_dot')
-                            .attr("stroke", "grey")
-                            .attr("opacity",1)
-                    smile.append("text")
-                        .attr( 'transform', 'translate( -100,' + ( height+(height/4)-25) + ')')
-                        .transition()
-                        .attr('fill','black')
-                        .text('asdasd');
+                    redrawSmiles(smile,x2)
                 }
             });
 
+        redrawVerticalLines(line_x);
+
+        function get_day(day){
+            return ((day % 7)==0) ? true : false ;
+        }
+    }
+/*
+ Redraw vertical lines and circles
+ param {obj} line_x = svg selectAll('.tick')
+ */
+    function redrawVerticalLines(line_x){
         line_x.append("circle")
             .attr("r",5)
             .attr("fill",'lightgray')
@@ -245,12 +198,48 @@ Redraw all lines after zoom
             .attr("stroke-width", 2)
             .attr("stroke", "lightgray")
             .attr("opacity",.5);
-
-        function get_day(day){
-            return ((day % 7)==0) ? true : false ;
-        }
     }
 
+/*
+ Redraw smiles
+ param {obj} smile = svg.select(); id line_x
+ param {int} x2 = max display date
+ */
+
+    function redrawSmiles(smile,x2){
+        smile.append('rect')
+            .attr('x',0)
+            .attr('y',0 - height+(height/4)-height/30)
+            .attr('width',0)
+            .attr('height',1)
+            .transition().duration(duration/20)
+                .attr('y',0 - height+(height/4)-height/20)
+                .attr('x',-width/10)
+                .attr('width',width/10)
+                .attr('height',height/22)
+                .attr('fill','white')
+                .attr('stroke','grey')
+                .attr('stroke-width',1);
+        smile.append("circle")
+            .attr('fill','white')
+            .attr("r",5)
+            .attr("opacity",1)
+            .transition().duration(duration/20)
+                .attr("r",height/35)
+                .attr('cy', 0 - height+(height/4)-height/35)
+                .attr("fill",'white')
+                .attr("stroke-width", 1)
+                .attr('class','circle_dot')
+                .attr("stroke", "grey")
+                .attr("opacity",1)
+        smile.append("text")
+            .attr('class','days')
+            .attr('font-size',height/58)
+            .attr('y',0-height+(height/4)-height/45)
+            .attr('x',-width/10+5)
+            .transition().delay(duration/20)
+                .text(function(d){return customTimeFormat(data[x2-7].date)+' - '+customTimeFormat(data[x2].date)});
+    }
 /*
 Draw Y axes
  */
@@ -307,7 +296,7 @@ Fix data view
         return function(date) {
             var i = formats.length - 1, f = formats[i];
             while (!f[1](date)) f = formats[--i];
-            return f[0](date);
+            return f[0](date).toUpperCase();
         };
     }
 }
@@ -332,8 +321,16 @@ function init() {
             });
             id.push(type.id);
         });
+
+
         dataset.id = id;
         dataset.system = data.system;
+        dataset.system ={
+            "duration" : 10000,
+            "height" : 680,
+            "width" : 1360,
+            "start_date_bettwen" : [0,7],
+            "colors":[['#1369b2','#3ba5d4'],[,]]};
         console.log(dataset);
         initchart('#chart',dataset);
     });
