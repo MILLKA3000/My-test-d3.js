@@ -5,7 +5,7 @@ function initchart(selector,data){
         margin      = { top : 70, right : 0, bottom : 50, left : 0 },
         duration = data.system.duration,
         i= 0,
-        start_date_bettwen = data.system.start_date_bettwen;
+        start_date_bettwen = [0,data.system.days_display];
 
 
     var color = data.system.colors;
@@ -64,19 +64,7 @@ function initchart(selector,data){
         .attr( 'offset', '100%' )
         .attr( 'style', 'stop-color:'+color[i][1]+';stop-opacity:1' );
 
-// - setting zoom
-    var zoom = d3.behavior.zoom()
-        .x(x)
-        .scaleExtent([1,1]);
 
-    zoom.on('zoom', function() {
-        var t = zoom.translate(),
-        tx = t[0];
-        tx = Math.min(tx,x.range()[0]);
-        tx = Math.max(tx,t[0]- x(max_date) + x.range()[1]);
-        zoom.translate([tx, t[1]]);
-        redraw();
-    });
 
     data.id.forEach(function(id){
         drawchart(svg,
@@ -119,20 +107,17 @@ Redraw all lines after zoom
             .call(xAxis);
         svg.selectAll("path.area")
             .attr("d", area);
-
-        var line_x = x_p.selectAll('.tick')
-            .attr("id", function(d, i) { return ("idlabel_" + i)});
-
-            line_x.each(function() {
-                if (get_day(line_x.attr('#idlabel_7'))===true ){
-                    var smile = svg.select("#idlabel_"+7);
-                    redrawSmiles(smile,7)
-                }
+        var line_x = x_p.selectAll('.tick');
+            line_x.each(function(d) {
+                var el = d3.select(this);
+                data.forEach(function(d,i){
+                    var full_date = d.date.toString().toUpperCase();
+                    if (full_date.search(el.select('text').text().toString())>=0){
+                        if (get_day(i)===true) { (i>0) ? redrawSmiles(el,i,0)  :false;}
+                    }
+                })
             });
-
-
-        redrawVerticalLines(line_x)
-
+        redrawVerticalLines(line_x);
     }
 
 /*
@@ -167,13 +152,7 @@ Redraw all lines after zoom
         svg.selectAll('.area').transition().duration(duration/6).ease('linear')
             .attr("d", area)
             .each("end", function() {
-                if (data[x2].date>=max_date){
-                    svg.append("rect")
-                        .attr("class", "pane")
-                        .attr("width", width)
-                        .attr("height", height)
-                        .call(zoom);
-                }else {rescale(x1+1,x2+1);}
+                (data[x2].date>=max_date) ? add_zoom() : rescale(x1+1,x2+1);
             });
 
         svg.selectAll('.x.axis').transition().duration(duration/6).ease('linear')
@@ -181,13 +160,36 @@ Redraw all lines after zoom
             .each("end", function() {
                 if (get_day(x2)===true ){
                     var smile = svg.select("#idlabel_"+x2);
-                    redrawSmiles(smile,x2)
+                    redrawSmiles(smile,x2,duration)
                 }
             });
 
         redrawVerticalLines(line_x);
 
     }
+/*
+ Add zoom for graph
+
+ */
+    function add_zoom(){
+        var zoom = d3.behavior.zoom()
+            .x(x)
+            .scaleExtent([1,1])
+            .on('zoom', function() {
+                var t = zoom.translate(),
+                    tx = t[0];
+                tx = Math.min(tx,width/data.system.days_display*(data.length-1)-width);
+                tx = Math.max(tx,t[0]- x(max_date) + x.range()[1]);
+                zoom.translate([tx, t[1]]);
+                redraw();
+            });
+        svg.append("rect")
+            .attr("class", "pane")
+            .attr("width", width)
+            .attr("height", height)
+            .call(zoom);
+    }
+
 /*
  Redraw vertical lines and circles
  param {obj} line_x = svg selectAll('.tick')
@@ -207,6 +209,7 @@ Redraw all lines after zoom
             .attr("stroke-width", 2)
             .attr("stroke", "lightgray")
             .attr("opacity",.5);
+
     }
 
 /*
@@ -215,7 +218,7 @@ Redraw all lines after zoom
  param {int} x2 = max display date
  */
 
-    function redrawSmiles(smile,x2){
+    function redrawSmiles(smile,x2,duration){
         smile.append('rect')
             .attr('x',0)
             .attr('y',0 - height+(height/4)-height/30)
@@ -241,13 +244,19 @@ Redraw all lines after zoom
                 .attr('class','circle_dot')
                 .attr("stroke", "grey")
                 .attr("opacity",1)
+        smile.append("image").transition().delay(duration/20)
+            .attr("xlink:href", "imgs/positive.png")
+            .attr('x',-height/35-1)
+            .attr("y", 0 - height+(height/4)-height/17)
+            .attr("width", height/17)
+            .attr("height", height/17);
         smile.append("text")
             .attr('class','days')
             .attr('font-size',height/58)
             .attr('y',0-height+(height/4)-height/45)
             .attr('x',-width/10+5)
             .transition().delay(duration/20)
-                .text(function(d){return customTimeFormat(data[x2-7].date)+' - '+customTimeFormat(data[x2].date)});
+                .text(function(d){return customTimeFormat(data[x2-data.system.days_display].date)+' - '+customTimeFormat(data[x2].date)});
     }
 /*
 Draw Y axes
@@ -305,7 +314,7 @@ Create horizontal grid
  */
 
     function get_day(day){
-        return ((day % 7)==0) ? true : false ;
+        return ((day % data.system.days_display)==0) ? true : false ;
     }
 /*
 Fix data view
@@ -345,13 +354,12 @@ function init() {
         dataset.id = id;
         dataset.system = data.system;
         dataset.system ={
-            "duration" : 100,
-            "height" : 680,
-            "width" : 1360,
-            "start_date_bettwen" : [0,7],
-            "colors":[['#1369b2','#3ba5d4'],[,]]};
-        console.log(dataset);
-        initchart('#chart',dataset);
+            "duration" : 10000, //int
+            "days_display" : 7, //int
+            "height" : 680, //int
+            "width" : 1360, //int
+            "colors":[['#1369b2','#3ba5d4'],[,]]}; //color schema
+        initchart('#linechart',dataset);
     });
 }
 
