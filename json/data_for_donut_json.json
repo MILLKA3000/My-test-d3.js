@@ -1,0 +1,26 @@
+[
+    {"name":"Wearables",
+        "Intels Ranking" :1,
+        "Trending":-48,
+        "MentionsThisMonth": 41200,
+        "MentionsLastMonth": 79186,
+        "data":[
+            { "value": 17, "size": 100,"name": "Intel" },
+            { "value": 14, "size": 100,"name": "Ford" },
+            { "value": 13, "size": 100,"name": "Audi" },
+            { "value": 13, "size": 100,"name": "Apple" },
+            { "value": 43, "size": 120,"name": "Other" }
+        ]},
+    {"name":"IOT",
+        "Intels Ranking" :2,
+        "Trending":-14,
+        "MentionsThisMonth":  182475,
+        "MentionsLastMonth":  213206,
+        "data":[
+            { "value": 20, "size": 100,"name": "Google" },
+            { "value": 15, "size": 100,"name": "Intel" },
+            { "value": 14, "size": 100,"name": "Microsoft" },
+            { "value": 14, "size": 100,"name": "Apple" },
+            { "value": 37, "size": 120,"name": "Other" }
+        ]}
+]

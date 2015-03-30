@@ -354,7 +354,7 @@ function init() {
         dataset.id = id;
         dataset.system = data.system;
         dataset.system ={
-            "duration" : 10000, //int
+            "duration" : 1000, //int
             "days_display" : 7, //int
             "height" : 680, //int
             "width" : 1360, //int

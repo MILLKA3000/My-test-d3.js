@@ -1,11 +1,4 @@
-//webkit(safari, chrome) and FF fix bug
-// :((
-// Running getBBox() on paths with cubic bezier curves results in a box that is too big. It appears the curve's control points are included, which is of course incorrect. Non-Webkit browsers get this right.
-
 if (navigator.userAgent.indexOf('AppleWebKit')>0){
-//    add_fix_width_for_name_text=13;
-//    add_fix_width_for_percent=10;
-//    add_fix_margin_block=5;
     add_fix_width_for_name_text=0;
     add_fix_width_for_percent=0;
     add_fix_margin_block=0;
@@ -17,35 +10,32 @@ if (navigator.userAgent.indexOf('AppleWebKit')>0){
 }
 
 //end fix
+var setting = [];
 
-var dataset = [
-    { value: 3, size: 100,name: "ASUS" },
-    { value: 28, size: 100,name: "ACER" },
-    { value: 25, size: 100,name: "OTHER" },
-    { value: 5, size: 100,name: "DELL" },
-    { value: 30, size: 120,name: "INTEL" }
-];
-
-
-
-
-function initData(selector,dataset){
-    var width = 800;
-    var height = 600;
-    var radius = Math.min(width, height) / 2;
-    var rotate = 10;
-    var donutWidth = 175;
-    var innerRadius = (Math.min(width, height) / 2) - donutWidth;
-
-    var color = ['#f2c426','#c366ea','#07a2f2','#ffffff','#0071c5'];
-    var colorPointSmallCircle = ["white", "grey"];
-    var radiusPointSmallCircle = [5, 2];
-    var paddingCenterCircleForInfoData = 1.15;
-
+function addSvg(selector){
     var svg = d3.select('#'+selector)
         .append('svg')
-        .attr('width', width)
-        .attr('height', height);
+        .attr('width', setting.width)
+        .attr('height', setting.height);
+    return svg;
+}
+
+function initData(svg,dataset){
+    svg.html('');
+    var width = setting.width;
+    var height = setting.height;
+    var radius = Math.min(width, height) / 2;
+    var rotate = 10;
+    var duration = setting.duration;
+    var donutWidth = setting.donutWidth;
+    var innerRadius = (Math.min(width, height) / 2) - donutWidth;
+
+    var color = setting.colorSector;
+    var colorPointSmallCircle = setting.colorPointSmallCircle;
+    var radiusPointSmallCircle = setting.radiusPointSmallCircle;
+    var paddingCenterCircleForInfoData = setting.paddingCenterCircleForInfoData;
+
+
 
     var pie = d3.layout.pie()
         .value(function(d) { return d.value; })
@@ -62,10 +52,10 @@ function initData(selector,dataset){
             .attr( 'id', 'shadowDonut' );
         ellipseShadow.append( 'feGaussianBlur' )
             .attr( 'stdDeviation', 11 )
-                .append( 'feOffset' )
-                    .attr( 'in', 'blur' )
-                    .attr( 'dx', 0 )
-                    .attr( 'dy', 0 );
+            .append( 'feOffset' )
+            .attr( 'in', 'blur' )
+            .attr( 'dx', 0 )
+            .attr( 'dy', 0 );
 
         var feMerge = ellipseShadow.append( 'feMerge' )
             .append( 'feMergeNode' )
@@ -105,23 +95,23 @@ function initData(selector,dataset){
 
         path.selectAll('path').data(pie(dataset))
             .enter()
-                .append('path')
-                .attr('d', arc)
-                .attr('transform', 'translate(' + (width / 2) + ',' + (height / 2) + ')')
-                .attr("fill","#fff")
-                .attr("opacity",.0)
+            .append('path')
+            .attr('d', arc)
+            .attr('transform', 'translate(' + (width / 2) + ',' + (height / 2) + ')')
+            .attr("fill","#fff")
+            .attr("opacity",.0)
             .transition()
-                .attr("opacity",1)
-                .attr("fill", function(d, i) { return color[i]; })
-                .delay(function(d, i) { return i * 100; })
-                    .duration(400)
-                    .attrTween('d', function(d) {
-                     var i = d3.interpolate(d.startAngle+0.1, d.endAngle);
-                        return function(t) {
-                          d.endAngle = i(t);
-                          return arc(d);
-                    }
-                    });
+            .attr("opacity",1)
+            .attr("fill", function(d, i) { return color[i]; })
+            .delay(function(d, i) { return i * 100; })
+            .duration(duration/2-duration/5)
+            .attrTween('d', function(d) {
+                var i = d3.interpolate(d.startAngle+0.1, d.endAngle);
+                return function(t) {
+                    d.endAngle = i(t);
+                    return arc(d);
+                }
+            });
 
         setTimeout(function(){
             path.append('circle')
@@ -130,9 +120,9 @@ function initData(selector,dataset){
                     cy: height/2,
                     r: innerRadius,
                     opacity: 0})
-                        .transition().duration(1000)
-                        .attr("opacity",1)
-                        .attr('fill','url(#circle_center)');
+                .transition().duration(duration)
+                .attr("opacity",1)
+                .attr('fill','url(#circle_center)');
         },200);
 
         setTimeout(function(){
@@ -147,7 +137,7 @@ function initData(selector,dataset){
                     transform: 'translate(' + (width / 2) + ',' + (height / 2) + ')',
                     r: function(){return radiusPointSmallCircle[0]; },
                     fill: function(){return colorPointSmallCircle[0]; }})
-                .transition().duration(1000)
+                .transition().duration(duration)
                 .attrTween("cx", function(d){ return findCenterForCircles(d,0);})
                 .attrTween("cy", function(d){ return findCenterForCircles(d,1);});
 
@@ -157,7 +147,7 @@ function initData(selector,dataset){
                     transform: 'translate(' + (width / 2) + ',' + (height / 2) + ')',
                     r: function(){return radiusPointSmallCircle[1]; },
                     fill: function(){return colorPointSmallCircle[1]; }})
-                .transition().duration(1000)
+                .transition().duration(duration)
                 .attrTween("cx", function(d){ return findCenterForCircles(d,0);})
                 .attrTween("cy", function(d){ return findCenterForCircles(d,1);});
 
@@ -167,19 +157,19 @@ function initData(selector,dataset){
                 .selectAll("polyline")
                 .data(pie(dataset))
                 .enter()
-                    .append("polyline")
-                    .attr('transform', 'translate(' + (width / 2) +
-                        ',' + (height / 2) + ')')
-                .transition().duration(1000)
-                    .attrTween("points", function(d){
-                        var interpolate = d3.interpolate(d, d);
-                        return function(t) {
-                            var d2 = interpolate(t);
-                            var start = arc.centroid(d2);
-                            var pos = arc.centroid(d2);
-                            pos[0] = start[0]+donutWidth * paddingCenterCircleForInfoData * (midAngle(d2) < Math.PI ? 1 : -1);
-                            return [arc.centroid(d2), pos];
-                        };
+                .append("polyline")
+                .attr('transform', 'translate(' + (width / 2) +
+                    ',' + (height / 2) + ')')
+                .transition().duration(duration)
+                .attrTween("points", function(d){
+                    var interpolate = d3.interpolate(d, d);
+                    return function(t) {
+                        var d2 = interpolate(t);
+                        var start = arc.centroid(d2);
+                        var pos = arc.centroid(d2);
+                        pos[0] = start[0]+donutWidth * paddingCenterCircleForInfoData * (midAngle(d2) < Math.PI ? 1 : -1);
+                        return [arc.centroid(d2), pos];
+                    };
                 });
 
             var text =  svg.append("g")
@@ -187,25 +177,25 @@ function initData(selector,dataset){
                 .data(pie(dataset));
 
             text.enter()
-                    .append("text")
-                    .attr("class", "text_name")
-                    .text(function(d) { return d.data.name;})
-                .transition().duration(1000)
-                    .attrTween("transform", function(d){ return transformName(d)})
-                    .styleTween("text-anchor", function(d){ return textAnchor(d)})
+                .append("text")
+                .attr("class", "text_name")
+                .text(function(d) { return d.data.name;})
+                .transition().duration(duration)
+                .attrTween("transform", function(d){ return transformName(d)})
+                .styleTween("text-anchor", function(d){ return textAnchor(d)})
                 .each(function(d) {
                     d.text_name_box = this.getBBox();
                 });
 
             text.enter()
-                    .append("text")
-                    .attr("fill", function(d, i) {
-                        return color[i]=="#ffffff" ? "grey" : color[i]; })
-                    .attr("class", "text_value")
+                .append("text")
+                .attr("fill", function(d, i) {
+                    return color[i]=="#ffffff" ? "grey" : color[i]; })
+                .attr("class", "text_value")
                 .text(function(d) { return d.data.value;})
-                    .transition().duration(1000)
-                    .attrTween("transform", function(d){ return transformValue(d)})
-                    .styleTween("text-anchor", function(d){ return textAnchor(d)})
+                .transition().duration(duration)
+                .attrTween("transform", function(d){ return transformValue(d)})
+                .styleTween("text-anchor", function(d){ return textAnchor(d)})
                 .each(function(d) {
                     d.text_val_box = this.getBBox();
                 });
@@ -213,14 +203,14 @@ function initData(selector,dataset){
 
 
             text.enter()
-                    .append("text")
-                    .attr("fill", function(d, i) {
-                        return color[i]=="#ffffff" ? "grey" : color[i]; })
-                    .attr("class", "percent")
-                    .text("%")
-                .transition().duration(1000)
-                    .attrTween("transform", function(d){return transformPercent(d)})
-                    .styleTween("text-anchor", function(d){ return textAnchor(d)})
+                .append("text")
+                .attr("fill", function(d, i) {
+                    return color[i]=="#ffffff" ? "grey" : color[i]; })
+                .attr("class", "percent")
+                .text("%")
+                .transition().duration(duration)
+                .attrTween("transform", function(d){return transformPercent(d)})
+                .styleTween("text-anchor", function(d){ return textAnchor(d)})
                 .each(function(d) {
                     d.percent_box = this.getBBox();
                 });
@@ -304,4 +294,27 @@ function initData(selector,dataset){
 
     }
 }
-initData('chart',dataset);
+function initRoundChart(setting){
+    svg = addSvg('chart');
+    d3.json("json/data_for_donut_json.json",function(data){
+        i=0;
+        ar = data[i];
+        initData(svg,ar.data);
+        setInterval(function(){
+            (i!=data.length-1) ? i++ : i=0;
+            ar = data[i];
+            initData(svg,ar.data);
+        },3000);
+
+    });
+}
+initRoundChart(setting = {
+        "duration":2000,
+        "width":960,
+        "height":600,
+        "donutWidth":175,
+        "colorSector":['#f2c426','#c366ea','#07a2f2','#ffffff','#0071c5'],
+        "colorPointSmallCircle":["white", "grey"],
+        "radiusPointSmallCircle":[5,2],
+        "paddingCenterCircleForInfoData":1.15
+});
